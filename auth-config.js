@@ -4,8 +4,11 @@
 const AUTH0_CONFIG = {
     domain: 'dev-2dbdsy0a433gccmf.us.auth0.com', // Replace with your Auth0 domain
     clientId: 'aTYwYMLiJmkDS6NyW31My0d4y43ttgLG', // Replace with your Auth0 Client ID
-    // redirectUri automatically uses your current domain (works with GitHub Pages, Netlify, etc.)
-    redirectUri: window.location.origin + '/admin.html',
+    // Ensure redirectUri works when site is served from a subfolder (e.g., GitHub Pages)
+    redirectUri: (function () {
+        const basePath = window.location.pathname.replace(/[^/]+$/, '');
+        return window.location.origin + basePath + 'admin.html';
+    })(),
     audience: '', // Optional: leave empty for basic auth
     scope: 'openid profile email'
 };

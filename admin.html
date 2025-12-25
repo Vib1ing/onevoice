@@ -374,17 +374,20 @@
         window.addEventListener('DOMContentLoaded', async function () {
             // Handle redirect callback
             const callbackResult = await handleAuthCallback();
-            if (callbackResult && !callbackResult.success) {
-                alert(callbackResult.error || 'Authentication failed');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Check authentication
-            const isAuth = await checkAuth();
-            if (!isAuth) {
-                window.location.href = 'login.html';
-                return;
+            if (callbackResult) {
+                if (!callbackResult.success) {
+                    alert(callbackResult.error || 'Authentication failed');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                // Successful callback: we're authenticated; continue to load admin
+            } else {
+                // No callback on URL, normal page load: ensure authenticated
+                const isAuth = await checkAuth();
+                if (!isAuth) {
+                    window.location.href = 'login.html';
+                    return;
+                }
             }
 
             // Check if user is whitelisted

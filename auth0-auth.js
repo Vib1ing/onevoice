@@ -93,7 +93,8 @@ async function handleAuthCallback() {
             const user = await getCurrentUser();
             if (user && user.email && isEmailWhitelisted(user.email)) {
                 // User is whitelisted, proceed to admin
-                window.history.replaceState({}, document.title, '/admin.html');
+                const basePath = window.location.pathname.replace(/[^/]+$/, '');
+                window.history.replaceState({}, document.title, basePath + 'admin.html');
                 return { success: true, user: user };
             } else {
                 // User is not whitelisted
@@ -114,9 +115,10 @@ async function logout() {
         if (!auth0Client) {
             await initAuth0();
         }
+        const basePath = window.location.pathname.replace(/[^/]+$/, '');
         await auth0Client.logout({
             logoutParams: {
-                returnTo: window.location.origin + '/index.html'
+                returnTo: window.location.origin + basePath + 'index.html'
             }
         });
     } catch (error) {
@@ -124,7 +126,8 @@ async function logout() {
         // Fallback: clear local storage and redirect
         sessionStorage.clear();
         localStorage.removeItem('auth0_token');
-        window.location.href = '/index.html';
+        const basePath = window.location.pathname.replace(/[^/]+$/, '');
+        window.location.href = basePath + 'index.html';
     }
 }
 
