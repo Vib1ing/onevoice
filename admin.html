@@ -263,6 +263,11 @@
             <div class="admin-header">
                 <h1>Admin Dashboard</h1>
                 <div class="admin-actions">
+                    <button class="btn-publish"
+                        onclick="publishToFiles(); alert('Data files downloaded! Upload the JSON files to your server in a /data/ folder for them to appear on the public site.');"
+                        style="background-color: #8B6F47; color: #F5F1E8; padding: 0.8rem 1.5rem; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; margin-right: 1rem; transition: background-color 0.3s;"
+                        onmouseover="this.style.backgroundColor='#6B5637'"
+                        onmouseout="this.style.backgroundColor='#8B6F47'">Publish & Download</button>
                     <button class="btn-logout" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -358,9 +363,42 @@
         </div>
     </footer>
 
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script src="auth-config.js"></script>
+    <script src="auth0-auth.js"></script>
     <script src="script.js"></script>
     <script src="admin.js"></script>
     <script src="update-navbar.js"></script>
+    <script>
+        // Handle Auth0 callback and check authentication
+        window.addEventListener('DOMContentLoaded', async function () {
+            // Handle redirect callback
+            const callbackResult = await handleAuthCallback();
+            if (callbackResult && !callbackResult.success) {
+                alert(callbackResult.error || 'Authentication failed');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check authentication
+            const isAuth = await checkAuth();
+            if (!isAuth) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check if user is whitelisted
+            const adminStatus = await isAdmin();
+            if (!adminStatus) {
+                alert('Your email is not authorized to access the admin panel.');
+                await logout();
+                return;
+            }
+
+            // User is authenticated and authorized, load admin panel
+            console.log('Admin panel loaded successfully');
+        });
+    </script>
 </body>
 
 </html>

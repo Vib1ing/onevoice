@@ -1,6 +1,17 @@
-// Check authentication on page load
-if (!checkAuth() || !isAdmin()) {
-    window.location.href = 'login.html';
+// Authentication is now handled in admin.html script tag
+// This check runs after Auth0 authentication
+async function checkAdminAuth() {
+    const isAuth = await checkAuth();
+    if (!isAuth) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    const adminStatus = await isAdmin();
+    if (!adminStatus) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
 }
 
 // Data storage (using localStorage - in production, this would be a backend)
@@ -60,6 +71,7 @@ function openModal(type, itemId = null) {
             </div>
             <input type="hidden" id="itemId" value="${itemId || ''}">
             <input type="hidden" id="itemType" value="blog">
+            <button type="submit" class="save-btn">${itemId ? 'Update' : 'Create'} Blog Post</button>
         `;
     } else if (type === 'member') {
         title = itemId ? 'Edit Member' : 'Add New Member';
@@ -83,6 +95,7 @@ function openModal(type, itemId = null) {
             </div>
             <input type="hidden" id="itemId" value="${itemId || ''}">
             <input type="hidden" id="itemType" value="member">
+            <button type="submit" class="save-btn">${itemId ? 'Update' : 'Add'} Member</button>
         `;
     } else if (type === 'event') {
         title = itemId ? 'Edit Event' : 'Add New Event';
@@ -127,6 +140,7 @@ function openModal(type, itemId = null) {
             </div>
             <input type="hidden" id="itemId" value="${itemId || ''}">
             <input type="hidden" id="itemType" value="event">
+            <button type="submit" class="save-btn">${itemId ? 'Update' : 'Create'} Event</button>
         `;
     }
 
@@ -216,6 +230,8 @@ function saveItem(type, itemId) {
 
     closeModal();
     loadItems();
+    // Automatically publish/save to JSON files
+    publishToFiles();
     showPublishSuccess(type, itemId ? 'updated' : 'created');
 }
 
@@ -267,6 +283,51 @@ function getPageUrl(type) {
         'event': 'events.html'
     };
     return urls[type] || 'index.html';
+}
+
+// Publish data to JSON files (for hosting)
+function publishToFiles() {
+    // Update global arrays from localStorage
+    blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+    members = JSON.parse(localStorage.getItem('members')) || [];
+    events = JSON.parse(localStorage.getItem('events')) || [];
+
+    // Create JSON files and download them
+    const dataFiles = {
+        'data/blogs.json': JSON.stringify(blogs, null, 2),
+        'data/members.json': JSON.stringify(members, null, 2),
+        'data/events.json': JSON.stringify(events, null, 2)
+    };
+
+    // Download files for hosting
+    Object.keys(dataFiles).forEach(filename => {
+        const blob = new Blob([dataFiles[filename]], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename.split('/').pop(); // Get just the filename
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    // Also save a combined data file
+    const allData = {
+        blogs: blogs,
+        members: members,
+        events: events,
+        lastUpdated: new Date().toISOString()
+    };
+    const combinedBlob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const combinedUrl = URL.createObjectURL(combinedBlob);
+    const combinedA = document.createElement('a');
+    combinedA.href = combinedUrl;
+    combinedA.download = 'data.json';
+    document.body.appendChild(combinedA);
+    combinedA.click();
+    document.body.removeChild(combinedA);
+    URL.revokeObjectURL(combinedUrl);
 }
 
 // Delete item function

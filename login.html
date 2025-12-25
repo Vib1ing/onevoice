@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OneVoice - Admin Login</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
     <style>
         .login-container {
             min-height: calc(100vh - 200px);
@@ -142,30 +143,6 @@
         <div class="login-box">
             <h2>Login</h2>
 
-            <!-- Member Login (Google) -->
-            <div style="margin-bottom: 2rem;">
-                <h3 style="color: #8B6F47; margin-bottom: 1rem; font-size: 1.2rem;">Member Login</h3>
-                <div id="google-signin-button" style="margin-bottom: 1rem;"></div>
-                <p style="color: #5C4A37; font-size: 0.9rem; text-align: center;">Sign in with Google to access member
-                    features</p>
-            </div>
-
-            <div style="border-top: 2px solid #D4C5B9; margin: 2rem 0; padding-top: 2rem;">
-                <h3 style="color: #8B6F47; margin-bottom: 1rem; font-size: 1.2rem;">Admin Login</h3>
-                <form class="login-form" id="adminLoginForm">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required placeholder="Enter admin username">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required
-                            placeholder="Enter admin password">
-                    </div>
-                    <button type="submit" class="login-btn">Admin Login</button>
-                    <div class="error-message" id="errorMessage">Invalid username or password</div>
-                </form>
-            </div>
 
             <div class="back-to-home">
                 <a href="index.html">← Back to Home</a>
@@ -208,89 +185,37 @@
         </div>
     </footer>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="script.js"></script>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script src="auth-config.js"></script>
+    <script src="auth0-auth.js"></script>
     <script>
-        // Check if already logged in
-        if (checkAuth()) {
-            if (isAdmin()) {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'index.html';
-            }
-        }
-
-        // Initialize Google Sign-In when page loads
-        window.onload = function () {
-            // Simple Google login button (for demo - replace with actual Google OAuth)
-            const googleButton = document.createElement('button');
-            googleButton.type = 'button';
-            googleButton.className = 'google-login-btn';
-            googleButton.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 20px; margin-right: 10px;"> Sign in with Google';
-            googleButton.style.cssText = `
-                width: 100%;
-                padding: 0.8rem;
-                background-color: #FFFFFF;
-                color: #5C4A37;
-                border: 2px solid #D4C5B9;
-                border-radius: 5px;
-                font-size: 1rem;
-                font-weight: 600;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background-color 0.3s;
-            `;
-            googleButton.onmouseover = function () {
-                this.style.backgroundColor = '#F5F1E8';
-            };
-            googleButton.onmouseout = function () {
-                this.style.backgroundColor = '#FFFFFF';
-            };
-            googleButton.onclick = function () {
-                // Simulate Google login for demo (replace with actual Google OAuth)
-                const mockGoogleUser = {
-                    getBasicProfile: function () {
-                        return {
-                            getName: () => 'Member User',
-                            getEmail: () => 'member@example.com',
-                            getImageUrl: () => 'https://via.placeholder.com/50'
-                        };
-                    }
-                };
-
-                // For actual implementation, use Google Identity Services:
-                // https://developers.google.com/identity/gsi/web/guides/overview
-                // For now, using a simple mock
-                const result = loginWithGoogle(mockGoogleUser);
-                if (result.success) {
-                    alert('Successfully logged in as member! (This is a demo - implement Google OAuth for production)');
-                    window.location.href = 'index.html';
+        // Initialize Auth0 and handle login
+        window.addEventListener('DOMContentLoaded', async function () {
+            // Check if already authenticated
+            const isAuth = await checkAuth();
+            if (isAuth) {
+                const adminStatus = await isAdmin();
+                if (adminStatus) {
+                    window.location.href = 'admin.html';
+                } else {
+                    // User is authenticated but not whitelisted
+                    await logout();
+                    document.getElementById('errorMessage').textContent = 'Your email is not authorized to access the admin panel.';
+                    document.getElementById('errorMessage').style.display = 'block';
                 }
-            };
-
-            const googleContainer = document.getElementById('google-signin-button');
-            if (googleContainer) {
-                googleContainer.appendChild(googleButton);
             }
-        };
 
-        // Handle admin login form submission
-        document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-
-            const result = login(username, password);
-            if (result.success && result.type === 'admin') {
-                window.location.href = 'admin.html';
-            } else {
-                errorMessage.style.display = 'block';
-                setTimeout(() => {
-                    errorMessage.style.display = 'none';
-                }, 3000);
+            // Set up login button
+            const loginButton = document.getElementById('login-button');
+            if (loginButton) {
+                loginButton.addEventListener('click', async function () {
+                    try {
+                        await login();
+                    } catch (error) {
+                        document.getElementById('errorMessage').textContent = 'Login failed. Please try again.';
+                        document.getElementById('errorMessage').style.display = 'block';
+                    }
+                });
             }
         });
     </script>

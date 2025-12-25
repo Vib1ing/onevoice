@@ -1,8 +1,26 @@
-// Load data from localStorage and display on public pages
+// Load data from JSON files (if available) or localStorage and display on public pages
+
+// Helper function to load data from JSON file or localStorage
+async function loadDataFromSource(sourceType, fallbackKey) {
+    try {
+        // Try to load from JSON file first
+        const response = await fetch(`data/${sourceType}.json`);
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        }
+    } catch (e) {
+        // File doesn't exist or can't be loaded, fallback to localStorage
+        console.log(`Loading ${sourceType} from localStorage (JSON file not available)`);
+    }
+
+    // Fallback to localStorage
+    return JSON.parse(localStorage.getItem(fallbackKey)) || [];
+}
 
 // Load blogs
-function loadBlogs() {
-    const blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+async function loadBlogs() {
+    const blogs = await loadDataFromSource('blogs', 'blogs');
 
     // Load blogs on blogs.html
     const blogsGrid = document.querySelector('.blogs-grid');
@@ -68,8 +86,8 @@ function loadBlogs() {
 }
 
 // Load members
-function loadMembers() {
-    const members = JSON.parse(localStorage.getItem('members')) || [];
+async function loadMembers() {
+    const members = await loadDataFromSource('members', 'members');
 
     const membersGrid = document.querySelector('.members-grid');
     if (membersGrid && window.location.pathname.includes('about.html')) {
@@ -91,8 +109,8 @@ function loadMembers() {
 }
 
 // Load events
-function loadEvents() {
-    const events = JSON.parse(localStorage.getItem('events')) || [];
+async function loadEvents() {
+    const events = await loadDataFromSource('events', 'events');
 
     const upcomingSection = document.querySelector('#upcoming-events');
     const pastSection = document.querySelector('#past-events');
@@ -177,13 +195,13 @@ function loadEvents() {
 }
 
 // Load blog detail
-function loadBlogDetail() {
+async function loadBlogDetail() {
     if (window.location.pathname.includes('blog-detail.html')) {
         const urlParams = new URLSearchParams(window.location.search);
         const blogId = urlParams.get('id');
 
         if (blogId) {
-            const blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+            const blogs = await loadDataFromSource('blogs', 'blogs');
             const blog = blogs.find(b => b.id === blogId);
 
             if (blog) {
@@ -245,10 +263,10 @@ function loadBlogDetail() {
 }
 
 // Load all data on page load
-document.addEventListener('DOMContentLoaded', function () {
-    loadBlogs();
-    loadMembers();
-    loadEvents();
-    loadBlogDetail();
+document.addEventListener('DOMContentLoaded', async function () {
+    await loadBlogs();
+    await loadMembers();
+    await loadEvents();
+    await loadBlogDetail();
 });
 

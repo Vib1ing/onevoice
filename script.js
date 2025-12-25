@@ -118,22 +118,18 @@ function loginWithGoogle(googleUser) {
     return { success: true, type: 'member' };
 }
 
-function logout() {
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('username');
-    sessionStorage.removeItem('userType');
-    sessionStorage.removeItem('userEmail');
-    sessionStorage.removeItem('userImage');
-
-    // Sign out from Google if logged in with Google
-    if (typeof gapi !== 'undefined' && gapi.auth2) {
-        const auth2 = gapi.auth2.getAuthInstance();
-        if (auth2) {
-            auth2.signOut();
-        }
+// Logout function - delegates to Auth0 logout if available
+async function logout() {
+    // Auth0 logout is handled in auth0-auth.js
+    // This function is kept for compatibility
+    if (typeof window.logout === 'function' && auth0Client) {
+        await window.logout();
+    } else {
+        // Fallback: clear session storage
+        sessionStorage.clear();
+        localStorage.removeItem('auth0_token');
+        window.location.href = 'index.html';
     }
-
-    window.location.href = 'index.html';
 }
 
 // Check if user is authenticated on admin pages
