@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     let userInfo = null;
 
     try {
+        // Ensure Auth0 client exists
+        if (typeof initAuth0 === 'function') {
+            await initAuth0();
+        }
         if (typeof checkAuth === 'function') {
             isAuthenticated = await checkAuth();
             if (isAuthenticated) {
