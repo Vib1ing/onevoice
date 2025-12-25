@@ -26,12 +26,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     navMenus.forEach(navMenu => {
         if (!navMenu) return;
 
-        const loginLink = Array.from(navMenu.querySelectorAll('a')).find(a => a.href.includes('login.html'));
+        const loginLink = Array.from(navMenu.querySelectorAll('a')).find(a => a.href.includes('login.html') || a.textContent.trim().toLowerCase() === 'login');
 
         if (isAuthenticated) {
             // User is logged in - hide login link and show logout
             if (loginLink) {
-                loginLink.style.display = 'none';
+                // Hide the entire list item if possible
+                const li = loginLink.closest('li') || loginLink;
+                li.style.display = 'none';
             }
 
             // Check if logout button doesn't exist
@@ -83,7 +85,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else {
             // User is not logged in - show login link
             if (loginLink) {
-                loginLink.style.display = 'block';
+                const li = loginLink.closest('li') || loginLink;
+                li.style.display = 'block';
             }
 
             // Remove logout button if exists

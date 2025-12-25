@@ -22,9 +22,9 @@ async function loadDataFromSource(sourceType, fallbackKey) {
 async function loadBlogs() {
     const blogs = await loadDataFromSource('blogs', 'blogs');
 
-    // Load blogs on blogs.html
+    // Load blogs wherever the blogs grid exists
     const blogsGrid = document.querySelector('.blogs-grid');
-    if (blogsGrid && window.location.pathname.includes('blogs.html')) {
+    if (blogsGrid) {
         blogsGrid.innerHTML = blogs.length === 0
             ? '<p style="text-align: center; color: #5C4A37; padding: 2rem;">No blog posts yet. Check back soon!</p>'
             : blogs.map(blog => {
@@ -55,7 +55,7 @@ async function loadBlogs() {
 
     // Load blog previews on index.html
     const blogPreviewGrid = document.querySelector('.blog-grid');
-    if (blogPreviewGrid && window.location.pathname.includes('index.html')) {
+    if (blogPreviewGrid) {
         const recentBlogs = blogs.slice(0, 3).reverse(); // Show 3 most recent
         blogPreviewGrid.innerHTML = recentBlogs.length === 0
             ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No blog posts yet. Check back soon!</p>'
@@ -90,7 +90,7 @@ async function loadMembers() {
     const members = await loadDataFromSource('members', 'members');
 
     const membersGrid = document.querySelector('.members-grid');
-    if (membersGrid && window.location.pathname.includes('about.html')) {
+    if (membersGrid) {
         membersGrid.innerHTML = members.length === 0
             ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No members yet. Check back soon!</p>'
             : members.map(member => `
@@ -115,7 +115,7 @@ async function loadEvents() {
     const upcomingSection = document.querySelector('#upcoming-events');
     const pastSection = document.querySelector('#past-events');
 
-    if (window.location.pathname.includes('events.html')) {
+    if (document.querySelector('.events-category')) {
         const upcomingEvents = events.filter(e => e.type === 'upcoming').sort((a, b) => new Date(a.date) - new Date(b.date));
         const pastEvents = events.filter(e => e.type === 'past').sort((a, b) => new Date(b.date) - new Date(a.date));
 

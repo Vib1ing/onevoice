@@ -22,8 +22,9 @@ const ADMIN_WHITELIST = [
 ];
 
 // Check if email is in whitelist
+const ADMIN_WHITELIST_NORMALIZED = ADMIN_WHITELIST.map(e => (e || '').trim().toLowerCase());
 function isEmailWhitelisted(email) {
-    return ADMIN_WHITELIST.includes(email.toLowerCase());
+    return ADMIN_WHITELIST_NORMALIZED.includes((email || '').trim().toLowerCase());
 }
 
 // Get whitelist (for admin to view/manage)

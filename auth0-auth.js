@@ -105,8 +105,7 @@ async function handleAuthCallback() {
                 window.history.replaceState({}, document.title, basePath + 'admin.html');
                 return { success: true, user: user };
             } else {
-                // User is not whitelisted
-                await logout();
+                // User is not whitelisted; do not call logout here to avoid loops
                 return { success: false, error: 'Your email is not authorized to access the admin panel.' };
             }
         }
