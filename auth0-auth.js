@@ -126,7 +126,7 @@ async function logout() {
         try {
             sessionStorage.clear();
             localStorage.removeItem('auth0_user');
-        } catch (e) {}
+        } catch (e) { }
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
         const returnTo = window.location.origin + basePath + 'index.html';
         await auth0Client.logout({
