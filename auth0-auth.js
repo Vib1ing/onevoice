@@ -126,13 +126,16 @@ async function logout() {
         try {
             sessionStorage.clear();
             localStorage.removeItem('auth0_user');
-        } catch (e) { }
+        } catch (e) {}
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
+        const returnTo = window.location.origin + basePath + 'index.html';
         await auth0Client.logout({
             logoutParams: {
-                returnTo: window.location.origin + basePath + 'index.html'
+                returnTo
             }
         });
+        // Hard fallback navigation in case the SDK doesn't redirect
+        window.location.replace(returnTo);
     } catch (error) {
         console.error('Logout error:', error);
         // Fallback: clear local storage and redirect
@@ -140,7 +143,7 @@ async function logout() {
         localStorage.removeItem('auth0_token');
         localStorage.removeItem('auth0_user');
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
-        window.location.href = basePath + 'index.html';
+        window.location.replace(basePath + 'index.html');
     }
 }
 

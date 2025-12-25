@@ -65,17 +65,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 logoutBtn.onclick = async function (e) {
                     e.preventDefault();
                     try {
-                        // Try Auth0 logout first
-                        if (typeof window.logout === 'function' && typeof auth0Client !== 'undefined') {
+                        if (typeof window.logout === 'function') {
                             await window.logout();
                         } else {
                             sessionStorage.clear();
-                            window.location.href = 'index.html';
+                            localStorage.removeItem('auth0_user');
+                            window.location.replace('index.html');
                         }
                     } catch (err) {
-                        // Fallback
                         sessionStorage.clear();
-                        window.location.href = 'index.html';
+                        localStorage.removeItem('auth0_user');
+                        window.location.replace('index.html');
                     }
                 };
                 userSection.appendChild(logoutBtn);
