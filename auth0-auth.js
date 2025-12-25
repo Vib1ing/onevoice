@@ -70,7 +70,11 @@ async function login() {
         }
         await auth0Client.loginWithRedirect({
             authorizationParams: {
-                redirect_uri: AUTH0_CONFIG.redirectUri
+                redirect_uri: AUTH0_CONFIG.redirectUri,
+                // Force showing the Universal Login (useful when an SSO session exists)
+                prompt: 'login',
+                scope: AUTH0_CONFIG.scope,
+                audience: AUTH0_CONFIG.audience || undefined
             }
         });
     } catch (error) {
