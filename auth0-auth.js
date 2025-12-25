@@ -98,6 +98,10 @@ async function handleAuthCallback() {
             if (user && user.email && isEmailWhitelisted(user.email)) {
                 // User is whitelisted, proceed to admin
                 const basePath = window.location.pathname.replace(/[^/]+$/, '');
+                try {
+                    sessionStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('auth0_user', JSON.stringify(user));
+                } catch (e) { }
                 window.history.replaceState({}, document.title, basePath + 'admin.html');
                 return { success: true, user: user };
             } else {
@@ -119,6 +123,11 @@ async function logout() {
         if (!auth0Client) {
             await initAuth0();
         }
+        // Clear simple fallback auth state
+        try {
+            sessionStorage.clear();
+            localStorage.removeItem('auth0_user');
+        } catch (e) { }
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
         await auth0Client.logout({
             logoutParams: {
@@ -130,6 +139,7 @@ async function logout() {
         // Fallback: clear local storage and redirect
         sessionStorage.clear();
         localStorage.removeItem('auth0_token');
+        localStorage.removeItem('auth0_user');
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
         window.location.href = basePath + 'index.html';
     }

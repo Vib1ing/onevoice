@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     } catch (e) {
         // Auth0 not initialized, use fallback
         isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+        if (isAuthenticated) {
+            try {
+                userInfo = JSON.parse(localStorage.getItem('auth0_user')) || null;
+            } catch (_) { userInfo = null; }
+        }
     }
 
     navMenus.forEach(navMenu => {
