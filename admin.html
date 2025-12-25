@@ -268,8 +268,7 @@
                         style="background-color: #8B6F47; color: #F5F1E8; padding: 0.8rem 1.5rem; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; margin-right: 1rem; transition: background-color 0.3s;"
                         onmouseover="this.style.backgroundColor='#6B5637'"
                         onmouseout="this.style.backgroundColor='#8B6F47'">Publish & Download</button>
-                    <button class="btn-logout"
-                        onclick="(async()=>{try{await logout();}catch(e){console.error(e);}})()">Logout</button>
+                    <!-- Navbar will provide Logout; removed local button -->
                 </div>
             </div>
 
@@ -391,12 +390,14 @@
                 }
             }
 
-            // Check if user is whitelisted
-            const adminStatus = await isAdmin();
-            if (!adminStatus) {
-                alert('Your email is not authorized to access the admin panel.');
-                await logout();
-                return;
+            // If we handled a successful callback, skip duplicate admin check
+            if (!callbackResult) {
+                const adminStatus = await isAdmin();
+                if (!adminStatus) {
+                    alert('Your email is not authorized to access the admin panel.');
+                    await logout();
+                    return;
+                }
             }
 
             // User is authenticated and authorized, load admin panel

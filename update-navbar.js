@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (!navMenu) return;
 
         const loginLink = Array.from(navMenu.querySelectorAll('a')).find(a => a.href.includes('login.html') || a.textContent.trim().toLowerCase() === 'login');
+        let adminLink = Array.from(navMenu.querySelectorAll('a')).find(a => a.href.includes('admin.html'));
 
         if (isAuthenticated) {
             // User is logged in - hide login link and show logout
@@ -82,6 +83,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 navMenu.appendChild(userSection);
             }
+
+            // Show Admin link for whitelisted users when not present
+            const isUserAdmin = userInfo && userInfo.isAdmin;
+            if (isUserAdmin && !adminLink) {
+                const li = document.createElement('li');
+                adminLink = document.createElement('a');
+                adminLink.href = 'admin.html';
+                adminLink.textContent = 'Admin';
+                li.appendChild(adminLink);
+                navMenu.insertBefore(li, navMenu.firstChild.nextSibling); // near Home
+            }
         } else {
             // User is not logged in - show login link
             if (loginLink) {
@@ -93,6 +105,12 @@ document.addEventListener('DOMContentLoaded', async function () {
             const logoutBtn = navMenu.querySelector('.logout-btn');
             if (logoutBtn && logoutBtn.parentElement) {
                 logoutBtn.parentElement.remove();
+            }
+
+            // Hide Admin link when logged out
+            if (adminLink) {
+                const li = adminLink.closest('li') || adminLink;
+                li.remove();
             }
         }
     });
