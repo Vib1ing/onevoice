@@ -6,13 +6,10 @@
 # Data files (optional - you might want to commit these)
 data/*.json
 !data/.gitkeep
-auth-config.js
 # OS files
 .DS_Store
 Thumbs.db
-PUBLISH_INSTRUCTIONS.md
-FREE_HOSTING_SETUP.md
-AUTH0_SETUP.md
+
 # Editor files
 .vscode/
 .idea/
