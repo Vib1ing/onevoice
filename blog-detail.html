@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneVoice - Blog Post</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>OneVoice</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="blogs.html" class="active">Blogs</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="donations.html">Donations</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Blog Detail Section -->
+    <section class="blog-detail-section">
+        <div class="container">
+            <article class="blog-detail">
+                <div class="blog-header">
+                    <h1>Blog Post Title</h1>
+                    <div class="blog-meta">
+                        <span class="blog-author">By Author Name</span>
+                        <span class="blog-time">5 min read</span>
+                        <span class="blog-date">Jan 15, 2025</span>
+                    </div>
+                </div>
+                <div class="blog-image-full">
+                    <img src="https://via.placeholder.com/1000x500/D4C5B9/8B6F47?text=Blog+Image" alt="Blog Post">
+                </div>
+                <div class="blog-body">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+                        voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+
+                    <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+                        est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
+                        doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi
+                        architecto beatae vitae dicta sunt explicabo.</p>
+
+                    <h2>Subheading</h2>
+                    <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur
+                        magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem
+                        ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora
+                        incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+
+                    <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut
+                        aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate
+                        velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla
+                        pariatur?</p>
+                </div>
+                <div class="blog-actions">
+                    <button class="like-btn" id="likeBtn" onclick="toggleLike()">
+                        <span id="likeIcon">❤️</span>
+                        <span id="likeCount">24</span>
+                    </button>
+                    <a href="blogs.html" class="back-link">← Back to Blogs</a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <footer class="contact-section">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h3>Location</h3>
+                        <p>123 Main Street<br>City, State 12345</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Email</h3>
+                        <p>contact@onevoice.org</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Phone</h3>
+                        <p>(123) 456-7890</p>
+                    </div>
+                </div>
+                <div class="social-media">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Facebook</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OneVoice. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="load-data.js"></script>
+    <script src="update-navbar.js"></script>
+</body>
+
+</html>

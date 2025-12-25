@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneVoice - Home</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>OneVoice</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="blogs.html">Blogs</a></li>
+                <li><a href="events.html">Events</a></li>
+                <li><a href="donations.html">Donations</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Banner Carousel -->
+    <section class="banner-section">
+        <div class="banner-container" id="bannerContainer">
+            <div class="banner-image active">
+                <img src="https://via.placeholder.com/1200x400/D4C5B9/8B6F47?text=Banner+Image+1" alt="Banner 1">
+            </div>
+            <div class="banner-image">
+                <img src="https://via.placeholder.com/1200x400/D4C5B9/8B6F47?text=Banner+Image+2" alt="Banner 2">
+            </div>
+            <div class="banner-image">
+                <img src="https://via.placeholder.com/1200x400/D4C5B9/8B6F47?text=Banner+Image+3" alt="Banner 3">
+            </div>
+            <button class="carousel-btn prev-btn" id="prevBtn">‹</button>
+            <button class="carousel-btn next-btn" id="nextBtn">›</button>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="mission-content">
+                <div class="logo-space">
+                    <img src="https://via.placeholder.com/200x200/D4C5B9/8B6F47?text=Logo" alt="OneVoice Logo"
+                        class="org-logo">
+                </div>
+                <div class="mission-text">
+                    <h2>Our Mission</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+                        voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                    <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
+                        est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
+                        doloremque laudantium.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Preview Section -->
+    <section class="blog-preview-section">
+        <div class="container">
+            <h2>Latest Blog Posts</h2>
+            <div class="blog-grid">
+                <article class="blog-card" onclick="window.location.href='blog-detail.html?id=1'">
+                    <div class="blog-image">
+                        <img src="https://via.placeholder.com/400x250/D4C5B9/8B6F47?text=Blog+Image" alt="Blog Post">
+                    </div>
+                    <div class="blog-content">
+                        <h3>Blog Post Title 1</h3>
+                        <div class="blog-meta">
+                            <span class="blog-author">By Author Name</span>
+                            <span class="blog-time">5 min read</span>
+                        </div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                            labore...</p>
+                        <div class="blog-stats">
+                            <span class="blog-likes">❤️ 24</span>
+                            <span class="blog-date">Jan 15, 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="blog-card" onclick="window.location.href='blog-detail.html?id=2'">
+                    <div class="blog-image">
+                        <img src="https://via.placeholder.com/400x250/D4C5B9/8B6F47?text=Blog+Image" alt="Blog Post">
+                    </div>
+                    <div class="blog-content">
+                        <h3>Blog Post Title 2</h3>
+                        <div class="blog-meta">
+                            <span class="blog-author">By Author Name</span>
+                            <span class="blog-time">3 min read</span>
+                        </div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                            labore...</p>
+                        <div class="blog-stats">
+                            <span class="blog-likes">❤️ 18</span>
+                            <span class="blog-date">Jan 10, 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="blog-card" onclick="window.location.href='blog-detail.html?id=3'">
+                    <div class="blog-image">
+                        <img src="https://via.placeholder.com/400x250/D4C5B9/8B6F47?text=Blog+Image" alt="Blog Post">
+                    </div>
+                    <div class="blog-content">
+                        <h3>Blog Post Title 3</h3>
+                        <div class="blog-meta">
+                            <span class="blog-author">By Author Name</span>
+                            <span class="blog-time">7 min read</span>
+                        </div>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                            labore...</p>
+                        <div class="blog-stats">
+                            <span class="blog-likes">❤️ 32</span>
+                            <span class="blog-date">Jan 5, 2025</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            <div class="view-all">
+                <a href="blogs.html" class="btn-primary">View All Blogs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <footer class="contact-section">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h3>Location</h3>
+                        <p>123 Main Street<br>City, State 12345</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Email</h3>
+                        <p>contact@onevoice.org</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Phone</h3>
+                        <p>(123) 456-7890</p>
+                    </div>
+                </div>
+                <div class="social-media">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Facebook</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OneVoice. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="load-data.js"></script>
+    <script src="update-navbar.js"></script>
+</body>
+
+</html>
