@@ -14,6 +14,7 @@ const AUTH0_CONFIG = {
 const ADMIN_WHITELIST = [
     'joshivivaan19@gmail.com',
     'alex9091nj@gmail.com',
+    'theonevoiceorganization@gmail.com',
     // Add more email addresses here that should have admin access
 ];
 
