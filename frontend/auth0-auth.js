@@ -8,6 +8,8 @@ async function initAuth0() {
         auth0Client = await auth0.createAuth0Client({
             domain: AUTH0_CONFIG.domain,
             clientId: AUTH0_CONFIG.clientId,
+            cacheLocation: 'localstorage', // Persistent session across refreshes
+            useRefreshTokens: true,        // Required for smooth persistent sessions
             authorizationParams: {
                 redirect_uri: AUTH0_CONFIG.redirectUri,
                 audience: AUTH0_CONFIG.audience
@@ -26,11 +28,18 @@ async function checkAuth() {
         if (!auth0Client) {
             await initAuth0();
         }
-        const isAuthenticated = await auth0Client.isAuthenticated();
+        let isAuthenticated = await auth0Client.isAuthenticated();
+
+        // Fallback to localStorage if SDK says false but we have a session
+        if (!isAuthenticated) {
+            isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+        }
+
         return isAuthenticated;
     } catch (error) {
         console.error('Error checking authentication:', error);
-        return false;
+        // Robust fallback
+        return localStorage.getItem('isAuthenticated') === 'true';
     }
 }
 
@@ -40,24 +49,53 @@ async function getCurrentUser() {
         if (!auth0Client) {
             await initAuth0();
         }
-        const user = await auth0Client.getUser();
+        let user = await auth0Client.getUser();
+
+        // Fallback to localStorage
+        if (!user) {
+            const savedUser = localStorage.getItem('auth0_user');
+            if (savedUser) {
+                user = JSON.parse(savedUser);
+            }
+        }
+
         return user;
     } catch (error) {
         console.error('Error getting user:', error);
-        return null;
+        // Last resort fallback
+        const savedUser = localStorage.getItem('auth0_user');
+        return savedUser ? JSON.parse(savedUser) : null;
     }
 }
 
-// Check if current user is admin (whitelisted)
+// Fetching admin status from server is deprecated in favor of client-side whitelist
+// but kept as a stub for compatibility if needed.
+async function fetchAdminStatusFromServer() {
+    return null;
+}
+
+// Check if current user is admin (using email whitelist)
 async function isAdmin() {
+    console.log('[Auth] isAdmin() check initiated');
     try {
         const user = await getCurrentUser();
         if (!user || !user.email) {
+            console.log('[Auth] isAdmin() -> No user or email detected');
             return false;
         }
-        return isEmailWhitelisted(user.email);
+
+        const email = user.email.toLowerCase().trim();
+        // Admin emails whitelist - check directly on client side
+        const whitelist = [
+            'joshivivaan19@gmail.com',
+            'alex9091nj@gmail.com',
+            'theonevoiceorganization@gmail.com'
+        ];
+        const isWhitelisted = whitelist.includes(email);
+        console.log(`[Auth] isAdmin() -> Email: "${email}", Whitelisted: ${isWhitelisted}`);
+        return isWhitelisted;
     } catch (error) {
-        console.error('Error checking admin status:', error);
+        console.error('[Auth] Error checking admin status:', error);
         return false;
     }
 }
@@ -93,20 +131,33 @@ async function handleAuthCallback() {
         if (query.includes('code=') && query.includes('state=')) {
             await auth0Client.handleRedirectCallback();
 
-            // Check if user is whitelisted
+            // Get the authenticated user
             const user = await getCurrentUser();
-            if (user && user.email && isEmailWhitelisted(user.email)) {
-                // User is whitelisted, proceed to admin
+            if (user && user.email) {
+                // Store session info
                 const basePath = window.location.pathname.replace(/[^/]+$/, '');
-                try {
-                    sessionStorage.setItem('isAuthenticated', 'true');
-                    localStorage.setItem('auth0_user', JSON.stringify(user));
-                } catch (e) { }
-                window.history.replaceState({}, document.title, basePath + 'admin.html');
-                return { success: true, user: user };
+                // Check if user is an admin
+                const adminStatus = await isAdmin();
+
+                // Explicitly set flags for clear navigation
+                sessionStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('isAuthenticated', 'true'); // Persistent
+                localStorage.setItem('auth0_user', JSON.stringify(user));
+
+                if (adminStatus) {
+                    // Admin user - redirect to admin panel
+                    window.history.replaceState({}, document.title, basePath + 'admin.html');
+                    window.location.href = basePath + 'admin.html'; // Force navigation
+                    return { success: true, user: user, isAdmin: true };
+                } else {
+                    // Non-admin user - redirect to home page
+                    window.history.replaceState({}, document.title, basePath + 'index.html');
+                    window.location.href = basePath + 'index.html'; // Force navigation
+                    return { success: true, user: user, isAdmin: false };
+                }
             } else {
-                // User is not whitelisted; do not call logout here to avoid loops
-                return { success: false, error: 'Your email is not authorized to access the admin panel.' };
+                // No user data - authentication failed
+                return { success: false, error: 'Authentication failed. Please try again.' };
             }
         }
         return null;
@@ -116,16 +167,19 @@ async function handleAuthCallback() {
     }
 }
 
+
 // Logout
 async function logout() {
     try {
         if (!auth0Client) {
             await initAuth0();
         }
-        // Clear simple fallback auth state
+        // Clear fallback auth state
         try {
             sessionStorage.clear();
+            localStorage.removeItem('isAuthenticated');
             localStorage.removeItem('auth0_user');
+            localStorage.removeItem('auth0_token');
         } catch (e) { }
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
         const returnTo = window.location.origin + basePath + 'index.html';
@@ -138,8 +192,8 @@ async function logout() {
         window.location.replace(returnTo);
     } catch (error) {
         console.error('Logout error:', error);
-        // Fallback: clear local storage and redirect
         sessionStorage.clear();
+        localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('auth0_token');
         localStorage.removeItem('auth0_user');
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
@@ -179,4 +233,3 @@ async function getAccessToken() {
         return null;
     }
 }
-

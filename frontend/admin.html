@@ -372,36 +372,52 @@
     <script>
         // Handle Auth0 callback and check authentication
         window.addEventListener('DOMContentLoaded', async function () {
+            console.log('Admin page loaded, checking auth...');
             // Handle redirect callback
             const callbackResult = await handleAuthCallback();
+            console.log('HandleAuthCallback result:', callbackResult);
+
             if (callbackResult) {
                 if (!callbackResult.success) {
+                    console.error('Callback failed:', callbackResult.error);
                     alert(callbackResult.error || 'Authentication failed');
                     window.location.href = 'login.html';
                     return;
                 }
-                // Successful callback: we're authenticated; continue to load admin
+                // If callback was successful but user is not admin, redirect to home
+                if (callbackResult.isAdmin === false) {
+                    console.warn('User from callback is NOT admin, redirecting to home');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                console.log('User from callback IS admin, staying on page');
+                // Admin user from callback - continue to load admin panel
             } else {
                 // No callback on URL, normal page load: ensure authenticated
+                console.log('Normal page load, checking existing session...');
                 const isAuth = await checkAuth();
+                console.log('checkAuth result:', isAuth);
+
                 if (!isAuth) {
+                    console.warn('Session not found, redirecting to login');
                     window.location.href = 'login.html';
                     return;
                 }
-            }
-
-            // If we handled a successful callback, skip duplicate admin check
-            if (!callbackResult) {
+                // Check admin status
                 const adminStatus = await isAdmin();
+                console.log('isAdmin result:', adminStatus);
+
                 if (!adminStatus) {
-                    alert('Your email is not authorized to access the admin panel.');
-                    await logout();
+                    console.warn('User is NOT admin, redirecting to home');
+                    // Non-admin user - redirect to home page (they're still logged in)
+                    window.location.href = 'index.html';
                     return;
                 }
+                console.log('User IS admin, staying on page');
             }
 
             // User is authenticated and authorized, load admin panel
-            console.log('Admin panel loaded successfully');
+            console.log('Admin panel verified and stay-open confirmed');
         });
     </script>
 </body>

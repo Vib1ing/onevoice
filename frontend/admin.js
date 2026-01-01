@@ -1,23 +1,37 @@
-// Authentication is now handled in admin.html script tag
-// This check runs after Auth0 authentication
-async function checkAdminAuth() {
-    const isAuth = await checkAuth();
-    if (!isAuth) {
-        window.location.href = 'login.html';
-        return false;
+// Helper for API calls with Auth0 token
+async function fetchWithAuth(url, options = {}) {
+    try {
+        const token = await getAccessToken();
+        const headers = {
+            ...options.headers,
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        } else {
+            console.warn('No access token available for API call');
+            throw new Error('Authentication mission: Login required (refresh token expired or missing)');
+        }
+
+        const response = await fetch(url, {
+            ...options,
+            headers: headers
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || `API error: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('API call failed:', error);
+        throw error;
     }
-    const adminStatus = await isAdmin();
-    if (!adminStatus) {
-        window.location.href = 'login.html';
-        return false;
-    }
-    return true;
 }
 
-// Data storage (using localStorage - in production, this would be a backend)
-let blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-let members = JSON.parse(localStorage.getItem('members')) || [];
-let events = JSON.parse(localStorage.getItem('events')) || [];
+// Data storage
+let blogs = [];
+let members = [];
+let events = [];
 
 // Tab switching
 function switchTab(tab) {
@@ -87,7 +101,7 @@ function openModal(type, itemId = null) {
             </div>
             <div class="form-group">
                 <label for="memberImage">Image URL</label>
-                <input type="url" id="memberImage" name="memberImage" value="${item ? item.image : ''}" placeholder="https://example.com/image.jpg">
+                <input type=\"url\" id=\"memberImage\" name=\"memberImage\" value=\"${item ? item.image : ''}\" placeholder=\"https://example.com/image.jpg\" required>            
             </div>
             <div class="form-group">
                 <label for="memberBio">Bio</label>
@@ -170,45 +184,28 @@ function closeModal() {
 }
 
 // Save item function
-function saveItem(type, itemId) {
+async function saveItem(type, itemId) {
+    const endpoint = `/api/${type}s`;
+    let body = {};
+
     if (type === 'blog') {
-        const blog = {
-            id: itemId || Date.now().toString(),
+        body = {
             title: document.getElementById('blogTitle').value,
             author: document.getElementById('blogAuthor').value,
             image: document.getElementById('blogImage').value || 'https://via.placeholder.com/600x350/D4C5B9/8B6F47?text=Blog+Image',
             content: document.getElementById('blogContent').value,
             readTime: parseInt(document.getElementById('blogReadTime').value),
-            date: document.getElementById('blogDate').value,
-            likes: itemId ? blogs.find(b => b.id === itemId)?.likes || 0 : 0
+            date: document.getElementById('blogDate').value
         };
-
-        if (itemId) {
-            const index = blogs.findIndex(b => b.id === itemId);
-            blogs[index] = blog;
-        } else {
-            blogs.push(blog);
-        }
-        localStorage.setItem('blogs', JSON.stringify(blogs));
     } else if (type === 'member') {
-        const member = {
-            id: itemId || Date.now().toString(),
+        body = {
             name: document.getElementById('memberName').value,
             role: document.getElementById('memberRole').value,
             image: document.getElementById('memberImage').value || 'https://via.placeholder.com/200x200/D4C5B9/8B6F47?text=Member',
             bio: document.getElementById('memberBio').value
         };
-
-        if (itemId) {
-            const index = members.findIndex(m => m.id === itemId);
-            members[index] = member;
-        } else {
-            members.push(member);
-        }
-        localStorage.setItem('members', JSON.stringify(members));
     } else if (type === 'event') {
-        const event = {
-            id: itemId || Date.now().toString(),
+        body = {
             title: document.getElementById('eventTitle').value,
             image: document.getElementById('eventImage').value || 'https://via.placeholder.com/400x250/D4C5B9/8B6F47?text=Event+Image',
             description: document.getElementById('eventDescription').value,
@@ -218,21 +215,23 @@ function saveItem(type, itemId) {
             type: document.getElementById('eventType').value,
             stats: document.getElementById('eventStats').value || ''
         };
-
-        if (itemId) {
-            const index = events.findIndex(e => e.id === itemId);
-            events[index] = event;
-        } else {
-            events.push(event);
-        }
-        localStorage.setItem('events', JSON.stringify(events));
     }
 
-    closeModal();
-    loadItems();
-    // Automatically publish/save to JSON files
-    publishToFiles();
-    showPublishSuccess(type, itemId ? 'updated' : 'created');
+    try {
+        const url = itemId ? `${endpoint}/${itemId}` : endpoint;
+        const method = itemId ? 'PUT' : 'POST';
+
+        await fetchWithAuth(url, {
+            method: method,
+            body: JSON.stringify(body)
+        });
+
+        closeModal();
+        await loadItems();
+        showPublishSuccess(type, itemId ? 'updated' : 'created');
+    } catch (error) {
+        alert(`Failed to save: ${error.message}`);
+    }
 }
 
 // Show publish success message
@@ -331,24 +330,34 @@ function publishToFiles() {
 }
 
 // Delete item function
-function deleteItem(type, itemId) {
+async function deleteItem(type, itemId) {
     if (confirm('Are you sure you want to delete this item?')) {
-        if (type === 'blog') {
-            blogs = blogs.filter(b => b.id !== itemId);
-            localStorage.setItem('blogs', JSON.stringify(blogs));
-        } else if (type === 'member') {
-            members = members.filter(m => m.id !== itemId);
-            localStorage.setItem('members', JSON.stringify(members));
-        } else if (type === 'event') {
-            events = events.filter(e => e.id !== itemId);
-            localStorage.setItem('events', JSON.stringify(events));
+        try {
+            await fetchWithAuth(`/api/${type}s/${itemId}`, {
+                method: 'DELETE'
+            });
+            await loadItems();
+        } catch (error) {
+            alert(`Failed to delete: ${error.message}`);
         }
-        loadItems();
     }
 }
 
 // Load and display items
-function loadItems() {
+async function loadItems() {
+    try {
+        // Fetch fresh data from API
+        blogs = await fetch('/api/blogs').then(r => r.json());
+        members = await fetch('/api/members').then(r => r.json());
+        events = await fetch('/api/events').then(r => r.json());
+    } catch (e) {
+        console.error('Failed to load items from API:', e);
+        // Fallback to local storage if API fails
+        blogs = JSON.parse(localStorage.getItem('blogs')) || [];
+        members = JSON.parse(localStorage.getItem('members')) || [];
+        events = JSON.parse(localStorage.getItem('events')) || [];
+    }
+
     // Load blogs
     const blogsList = document.getElementById('blogs-list');
     if (blogsList) {
@@ -361,8 +370,8 @@ function loadItems() {
                         <p>By ${blog.author} • ${blog.readTime} min read • ${new Date(blog.date).toLocaleDateString()}</p>
                     </div>
                     <div class="item-actions">
-                        <button class="btn-edit" onclick="openModal('blog', '${blog.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteItem('blog', '${blog.id}')">Delete</button>
+                        <button class="btn-edit" onclick="openModal('blog', '${blog._id || blog.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteItem('blog', '${blog._id || blog.id}')">Delete</button>
                     </div>
                 </div>
             `).join('');
@@ -380,8 +389,8 @@ function loadItems() {
                         <p>${member.role}</p>
                     </div>
                     <div class="item-actions">
-                        <button class="btn-edit" onclick="openModal('member', '${member.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteItem('member', '${member.id}')">Delete</button>
+                        <button class="btn-edit" onclick="openModal('member', '${member._id || member.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteItem('member', '${member._id || member.id}')">Delete</button>
                     </div>
                 </div>
             `).join('');
@@ -399,8 +408,8 @@ function loadItems() {
                         <p>${new Date(event.date).toLocaleDateString()} • ${event.time} • ${event.type === 'upcoming' ? 'Upcoming' : 'Past'}</p>
                     </div>
                     <div class="item-actions">
-                        <button class="btn-edit" onclick="openModal('event', '${event.id}')">Edit</button>
-                        <button class="btn-delete" onclick="deleteItem('event', '${event.id}')">Delete</button>
+                        <button class="btn-edit" onclick="openModal('event', '${event._id || event.id}')">Edit</button>
+                        <button class="btn-delete" onclick="deleteItem('event', '${event._id || event.id}')">Delete</button>
                     </div>
                 </div>
             `).join('');

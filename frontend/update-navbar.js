@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (typeof initAuth0 === 'function') {
             await initAuth0();
         }
+
         if (typeof checkAuth === 'function') {
             isAuthenticated = await checkAuth();
             if (isAuthenticated) {
@@ -18,12 +19,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         }
     } catch (e) {
-        // Auth0 not initialized, use fallback
-        isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+        console.error('Navbar auth check failed:', e);
+        // Last resort fallback
+        isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
         if (isAuthenticated) {
             try {
-                userInfo = JSON.parse(localStorage.getItem('auth0_user')) || null;
-            } catch (_) { userInfo = null; }
+                userInfo = JSON.parse(localStorage.getItem('auth0_user'));
+            } catch (_) { }
         }
     }
 
@@ -94,9 +96,17 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const li = document.createElement('li');
                 adminLink = document.createElement('a');
                 adminLink.href = 'admin.html';
-                adminLink.textContent = 'Admin';
+                adminLink.textContent = 'Admin Dashboard'; // Made more descriptive
+                adminLink.className = window.location.pathname.includes('admin.html') ? 'active' : '';
                 li.appendChild(adminLink);
-                navMenu.insertBefore(li, navMenu.firstChild.nextSibling); // near Home
+
+                // Find Home link to insert after it, or prepend
+                const homeLink = Array.from(navMenu.querySelectorAll('a')).find(a => a.href.includes('index.html'));
+                if (homeLink && homeLink.parentElement) {
+                    homeLink.parentElement.insertAdjacentElement('afterend', li);
+                } else {
+                    navMenu.insertBefore(li, navMenu.firstChild);
+                }
             }
         } else {
             // User is not logged in - show login link

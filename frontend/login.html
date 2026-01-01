@@ -193,19 +193,28 @@
     <script>
         // Initialize Auth0 and handle login
         window.addEventListener('DOMContentLoaded', async function () {
-            // Check if already authenticated
-            const isAuth = await checkAuth();
-            if (isAuth) {
-                const adminStatus = await isAdmin();
-                if (adminStatus) {
-                    window.location.href = 'admin.html';
-                } else {
-                    // User is authenticated but not whitelisted
-                    await logout();
-                    document.getElementById('errorMessage').textContent = 'Your email is not authorized to access the admin panel.';
+            // Handle potential OAuth callback on this page
+            try {
+                const cb = await handleAuthCallback();
+                if (cb && cb.success) {
+                    console.log('Callback success, redirecting...', cb);
+                    if (cb.isAdmin) {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                    return;
+                } else if (cb && cb.success === false) {
+                    document.getElementById('errorMessage').textContent = cb.error || 'Authentication failed.';
                     document.getElementById('errorMessage').style.display = 'block';
                 }
+            } catch (e) {
+                console.error('Callback error:', e);
             }
+
+            // Notice: Auto-redirect logic removed to prevent loops and allow fresh login
+            // Only redirect if specifically triggered by a button or a successful callback
+
 
             // Set up login button
             const loginButton = document.getElementById('login-button');
