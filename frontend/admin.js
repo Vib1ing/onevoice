@@ -185,7 +185,7 @@ function closeModal() {
 
 // Save item function
 async function saveItem(type, itemId) {
-    const endpoint = `/api/${type}s`;
+    const endpoint = `${AUTH0_CONFIG.apiUrl}/${type}s`;
     let body = {};
 
     if (type === 'blog') {
@@ -333,7 +333,7 @@ function publishToFiles() {
 async function deleteItem(type, itemId) {
     if (confirm('Are you sure you want to delete this item?')) {
         try {
-            await fetchWithAuth(`/api/${type}s/${itemId}`, {
+            await fetchWithAuth(`${AUTH0_CONFIG.apiUrl}/${type}s/${itemId}`, {
                 method: 'DELETE'
             });
             await loadItems();
@@ -347,9 +347,9 @@ async function deleteItem(type, itemId) {
 async function loadItems() {
     try {
         // Fetch fresh data from API
-        blogs = await fetch('/api/blogs').then(r => r.json());
-        members = await fetch('/api/members').then(r => r.json());
-        events = await fetch('/api/events').then(r => r.json());
+        blogs = await fetch(`${AUTH0_CONFIG.apiUrl}/blogs`).then(r => r.json());
+        members = await fetch(`${AUTH0_CONFIG.apiUrl}/members`).then(r => r.json());
+        events = await fetch(`${AUTH0_CONFIG.apiUrl}/events`).then(r => r.json());
     } catch (e) {
         console.error('Failed to load items from API:', e);
         // Fallback to local storage if API fails

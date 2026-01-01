@@ -2,7 +2,7 @@
 
 async function fetchFromApi(endpoint) {
   try {
-    const res = await fetch(`/api/${endpoint}`);
+    const res = await fetch(`${AUTH0_CONFIG.apiUrl}/${endpoint}`);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {

@@ -9,8 +9,20 @@ const blogsRouter = require('./routes/api/blogs');
 const adminRouter = require('./routes/api/admin');
 
 const app = express();
-app.use(cors());
+
+// Allow CORS for the production frontend
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://onevoicengo.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// Root route for health check
+app.get('/', (req, res) => {
+  res.send('One Voice NGO API is running...');
+});
 
 // DB
 mongoose.connect(process.env.MONGO_URI, {
