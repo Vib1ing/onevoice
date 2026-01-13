@@ -204,9 +204,88 @@ async function loadEvents() {
   }
 }
 
+// Load individual blog post for blog-detail.html
+async function loadBlogDetail() {
+  const blogDetail = document.querySelector('.blog-detail');
+  if (!blogDetail) return;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const blogId = urlParams.get('id');
+
+  if (!blogId) {
+    blogDetail.innerHTML = '<p style="text-align: center; color: #5C4A37; padding: 2rem;">Blog post not found. <a href="blogs.html">Return to blogs</a></p>';
+    return;
+  }
+
+  try {
+    // First try API
+    let blog = null;
+    try {
+      const res = await fetch(`${AUTH0_CONFIG.apiUrl}/blogs/${blogId}`);
+      if (res.ok) {
+        blog = await res.json();
+      }
+    } catch (e) {
+      // fallback below
+    }
+
+    // If API fails, try to find in full list
+    if (!blog) {
+      let blogs = await fetchFromApi('blogs');
+      if (!blogs) blogs = await loadDataFromSource('blogs', 'blogs');
+      blog = blogs.find(b => (b.id === blogId || b._id === blogId));
+    }
+
+    if (!blog) {
+      blogDetail.innerHTML = '<p style="text-align: center; color: #5C4A37; padding: 2rem;">Blog post not found. <a href="blogs.html">Return to blogs</a></p>';
+      return;
+    }
+
+    const date = new Date(blog.date);
+    document.title = `OneVoice - ${blog.title}`;
+
+    blogDetail.innerHTML = `
+      <div class="blog-header">
+        <h1>${blog.title}</h1>
+        <div class="blog-meta">
+          <span class="blog-author">By ${blog.author}</span>
+          <span class="blog-time">${blog.readTime || 5} min read</span>
+          <span class="blog-date">${date.toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="blog-image-full">
+        <img src="${blog.image}" alt="${blog.title}">
+      </div>
+      <div class="blog-body">
+        ${blog.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
+      </div>
+      <div class="blog-actions">
+        <button class="like-btn" id="likeBtn" onclick="toggleLike('${blog._id || blog.id}')">
+          <span id="likeIcon">❤️</span>
+          <span id="likeCount">${blog.likes || 0}</span>
+        </button>
+        <a href="blogs.html" class="back-link">← Back to Blogs</a>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error loading blog:', error);
+    blogDetail.innerHTML = '<p style="text-align: center; color: #5C4A37; padding: 2rem;">Error loading blog. <a href="blogs.html">Return to blogs</a></p>';
+  }
+}
+
+// Toggle like on blog post
+async function toggleLike(blogId) {
+  const likeCount = document.getElementById('likeCount');
+  if (likeCount) {
+    const currentLikes = parseInt(likeCount.textContent) || 0;
+    likeCount.textContent = currentLikes + 1;
+  }
+}
+
 // Load all data on page load (public pages)
 document.addEventListener('DOMContentLoaded', async function () {
   await loadBlogs();
   await loadMembers();
   await loadEvents();
+  await loadBlogDetail();
 });

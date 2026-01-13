@@ -7,6 +7,7 @@ const membersRouter = require('./routes/api/members');
 const eventsRouter = require('./routes/api/events');
 const blogsRouter = require('./routes/api/blogs');
 const adminRouter = require('./routes/api/admin');
+const uploadsRouter = require('./routes/api/uploads');
 
 const app = express();
 
@@ -35,6 +36,8 @@ app.use('/api/members', membersRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/blogs', blogsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/uploads', uploadsRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`API server running on ${PORT}`));
+

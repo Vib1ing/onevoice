@@ -28,6 +28,75 @@ async function fetchWithAuth(url, options = {}) {
     }
 }
 
+// Upload image to Cloudinary via backend
+async function uploadImage(file) {
+    const token = await getAccessToken();
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch(`${AUTH0_CONFIG.apiUrl}/uploads`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Failed to upload image');
+    }
+
+    const result = await response.json();
+    return result.url;
+}
+
+// Setup image preview and file selection
+function setupImageHandlers(type) {
+    const fileInput = document.getElementById(`${type}ImageFile`);
+    const urlInput = document.getElementById(`${type}Image`);
+    const previewDiv = document.getElementById(`${type}ImagePreview`);
+
+    if (!fileInput || !urlInput || !previewDiv) return;
+
+    // File selection handler
+    fileInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Invalid file type. Please select a JPEG, JPG, PNG, or HEIC image.');
+                fileInput.value = '';
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewDiv.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 2px solid #D4C5B9;">`;
+            };
+            reader.readAsDataURL(file);
+
+            // Clear URL input when file is selected
+            urlInput.value = '';
+        }
+    });
+
+    // URL input handler - clear file when URL is entered
+    urlInput.addEventListener('input', function () {
+        if (this.value) {
+            fileInput.value = '';
+            previewDiv.innerHTML = `<img src="${this.value}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 2px solid #D4C5B9;" onerror="this.style.display='none'">`;
+        }
+    });
+
+    // Show existing image preview if URL is present
+    if (urlInput.value) {
+        previewDiv.innerHTML = `<img src="${urlInput.value}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 5px; border: 2px solid #D4C5B9;" onerror="this.style.display='none'">`;
+    }
+}
+
 // Data storage
 let blogs = [];
 let members = [];
@@ -66,8 +135,13 @@ function openModal(type, itemId = null) {
                 <input type="text" id="blogAuthor" name="blogAuthor" value="${item ? item.author : ''}" required>
             </div>
             <div class="form-group">
-                <label for="blogImage">Image URL</label>
+                <label for="blogImage">Image</label>
+                <div style="margin-bottom: 0.5rem;">
+                    <input type="file" id="blogImageFile" name="blogImageFile" accept=".jpg,.jpeg,.png,.heic" style="margin-bottom: 0.5rem;">
+                    <small style="color: #5C4A37;">Or enter URL:</small>
+                </div>
                 <input type="url" id="blogImage" name="blogImage" value="${item ? item.image : ''}" placeholder="https://example.com/image.jpg">
+                <div id="blogImagePreview" style="margin-top: 0.5rem;"></div>
             </div>
             <div class="form-group">
                 <label for="blogContent">Content</label>
@@ -100,8 +174,13 @@ function openModal(type, itemId = null) {
                 <input type="text" id="memberRole" name="memberRole" value="${item ? item.role : ''}" required>
             </div>
             <div class="form-group">
-                <label for="memberImage">Image URL</label>
-                <input type=\"url\" id=\"memberImage\" name=\"memberImage\" value=\"${item ? item.image : ''}\" placeholder=\"https://example.com/image.jpg\" required>            
+                <label for="memberImage">Image</label>
+                <div style="margin-bottom: 0.5rem;">
+                    <input type="file" id="memberImageFile" name="memberImageFile" accept=".jpg,.jpeg,.png,.heic" style="margin-bottom: 0.5rem;">
+                    <small style="color: #5C4A37;">Or enter URL:</small>
+                </div>
+                <input type="url" id="memberImage" name="memberImage" value="${item ? item.image : ''}" placeholder="https://example.com/image.jpg" required>
+                <div id="memberImagePreview" style="margin-top: 0.5rem;"></div>
             </div>
             <div class="form-group">
                 <label for="memberBio">Bio</label>
@@ -120,8 +199,13 @@ function openModal(type, itemId = null) {
                 <input type="text" id="eventTitle" name="eventTitle" value="${item ? item.title : ''}" required>
             </div>
             <div class="form-group">
-                <label for="eventImage">Image URL</label>
+                <label for="eventImage">Image</label>
+                <div style="margin-bottom: 0.5rem;">
+                    <input type="file" id="eventImageFile" name="eventImageFile" accept=".jpg,.jpeg,.png,.heic" style="margin-bottom: 0.5rem;">
+                    <small style="color: #5C4A37;">Or enter URL:</small>
+                </div>
                 <input type="url" id="eventImage" name="eventImage" value="${item ? item.image : ''}" placeholder="https://example.com/image.jpg">
+                <div id="eventImagePreview" style="margin-top: 0.5rem;"></div>
             </div>
             <div class="form-group">
                 <label for="eventDescription">Description</label>
@@ -162,6 +246,9 @@ function openModal(type, itemId = null) {
     formContent.innerHTML = formHTML;
     modal.classList.add('active');
 
+    // Setup image handlers for preview and upload
+    setupImageHandlers(type === 'blog' ? 'blog' : type === 'member' ? 'member' : 'event');
+
     // Show/hide stats field based on event type
     if (type === 'event') {
         const eventTypeSelect = document.getElementById('eventType');
@@ -187,37 +274,60 @@ function closeModal() {
 async function saveItem(type, itemId) {
     const endpoint = `${AUTH0_CONFIG.apiUrl}/${type}s`;
     let body = {};
-
-    if (type === 'blog') {
-        body = {
-            title: document.getElementById('blogTitle').value,
-            author: document.getElementById('blogAuthor').value,
-            image: document.getElementById('blogImage').value || 'https://via.placeholder.com/600x350/D4C5B9/8B6F47?text=Blog+Image',
-            content: document.getElementById('blogContent').value,
-            readTime: parseInt(document.getElementById('blogReadTime').value),
-            date: document.getElementById('blogDate').value
-        };
-    } else if (type === 'member') {
-        body = {
-            name: document.getElementById('memberName').value,
-            role: document.getElementById('memberRole').value,
-            image: document.getElementById('memberImage').value || 'https://via.placeholder.com/200x200/D4C5B9/8B6F47?text=Member',
-            bio: document.getElementById('memberBio').value
-        };
-    } else if (type === 'event') {
-        body = {
-            title: document.getElementById('eventTitle').value,
-            image: document.getElementById('eventImage').value || 'https://via.placeholder.com/400x250/D4C5B9/8B6F47?text=Event+Image',
-            description: document.getElementById('eventDescription').value,
-            date: document.getElementById('eventDate').value,
-            time: document.getElementById('eventTime').value,
-            location: document.getElementById('eventLocation').value,
-            type: document.getElementById('eventType').value,
-            stats: document.getElementById('eventStats').value || ''
-        };
-    }
+    const saveBtn = document.querySelector('.save-btn');
+    const originalText = saveBtn ? saveBtn.textContent : '';
 
     try {
+        // Show loading state
+        if (saveBtn) {
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+        }
+
+        // Handle image upload if file is selected
+        let imageUrl = '';
+        const fileInputId = `${type}ImageFile`;
+        const urlInputId = `${type}Image`;
+        const fileInput = document.getElementById(fileInputId);
+        const urlInput = document.getElementById(urlInputId);
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            // Upload file to Cloudinary
+            if (saveBtn) saveBtn.textContent = 'Uploading image...';
+            imageUrl = await uploadImage(fileInput.files[0]);
+        } else if (urlInput && urlInput.value) {
+            imageUrl = urlInput.value;
+        }
+
+        if (type === 'blog') {
+            body = {
+                title: document.getElementById('blogTitle').value,
+                author: document.getElementById('blogAuthor').value,
+                image: imageUrl || 'https://via.placeholder.com/600x350/D4C5B9/8B6F47?text=Blog+Image',
+                content: document.getElementById('blogContent').value,
+                readTime: parseInt(document.getElementById('blogReadTime').value),
+                date: document.getElementById('blogDate').value
+            };
+        } else if (type === 'member') {
+            body = {
+                name: document.getElementById('memberName').value,
+                role: document.getElementById('memberRole').value,
+                image: imageUrl || 'https://via.placeholder.com/200x200/D4C5B9/8B6F47?text=Member',
+                bio: document.getElementById('memberBio').value
+            };
+        } else if (type === 'event') {
+            body = {
+                title: document.getElementById('eventTitle').value,
+                image: imageUrl || 'https://via.placeholder.com/400x250/D4C5B9/8B6F47?text=Event+Image',
+                description: document.getElementById('eventDescription').value,
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                location: document.getElementById('eventLocation').value,
+                type: document.getElementById('eventType').value,
+                stats: document.getElementById('eventStats').value || ''
+            };
+        }
+
         const url = itemId ? `${endpoint}/${itemId}` : endpoint;
         const method = itemId ? 'PUT' : 'POST';
 
@@ -231,6 +341,12 @@ async function saveItem(type, itemId) {
         showPublishSuccess(type, itemId ? 'updated' : 'created');
     } catch (error) {
         alert(`Failed to save: ${error.message}`);
+    } finally {
+        // Restore button state
+        if (saveBtn) {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+        }
     }
 }
 
@@ -282,51 +398,6 @@ function getPageUrl(type) {
         'event': 'events.html'
     };
     return urls[type] || 'index.html';
-}
-
-// Publish data to JSON files (for hosting)
-function publishToFiles() {
-    // Update global arrays from localStorage
-    blogs = JSON.parse(localStorage.getItem('blogs')) || [];
-    members = JSON.parse(localStorage.getItem('members')) || [];
-    events = JSON.parse(localStorage.getItem('events')) || [];
-
-    // Create JSON files and download them
-    const dataFiles = {
-        'data/blogs.json': JSON.stringify(blogs, null, 2),
-        'data/members.json': JSON.stringify(members, null, 2),
-        'data/events.json': JSON.stringify(events, null, 2)
-    };
-
-    // Download files for hosting
-    Object.keys(dataFiles).forEach(filename => {
-        const blob = new Blob([dataFiles[filename]], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename.split('/').pop(); // Get just the filename
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
-
-    // Also save a combined data file
-    const allData = {
-        blogs: blogs,
-        members: members,
-        events: events,
-        lastUpdated: new Date().toISOString()
-    };
-    const combinedBlob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-    const combinedUrl = URL.createObjectURL(combinedBlob);
-    const combinedA = document.createElement('a');
-    combinedA.href = combinedUrl;
-    combinedA.download = 'data.json';
-    document.body.appendChild(combinedA);
-    combinedA.click();
-    document.body.removeChild(combinedA);
-    URL.revokeObjectURL(combinedUrl);
 }
 
 // Delete item function
