@@ -8,8 +8,8 @@ async function initAuth0() {
         auth0Client = await auth0.createAuth0Client({
             domain: AUTH0_CONFIG.domain,
             clientId: AUTH0_CONFIG.clientId,
-            cacheLocation: 'localstorage', // Persistent session across refreshes
-            useRefreshTokens: true,        // Required for smooth persistent sessions
+            cacheLocation: 'memory', // Session ends when tab closes
+            useRefreshTokens: false,  // Not needed for session-only
             authorizationParams: {
                 redirect_uri: AUTH0_CONFIG.redirectUri,
                 audience: AUTH0_CONFIG.audience
@@ -30,16 +30,16 @@ async function checkAuth() {
         }
         let isAuthenticated = await auth0Client.isAuthenticated();
 
-        // Fallback to localStorage if SDK says false but we have a session
+        // Fallback to sessionStorage if SDK says false but we have a session
         if (!isAuthenticated) {
-            isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+            isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
         }
 
         return isAuthenticated;
     } catch (error) {
         console.error('Error checking authentication:', error);
-        // Robust fallback
-        return localStorage.getItem('isAuthenticated') === 'true';
+        // Robust fallback (session only)
+        return sessionStorage.getItem('isAuthenticated') === 'true';
     }
 }
 
@@ -51,9 +51,9 @@ async function getCurrentUser() {
         }
         let user = await auth0Client.getUser();
 
-        // Fallback to localStorage
+        // Fallback to sessionStorage
         if (!user) {
-            const savedUser = localStorage.getItem('auth0_user');
+            const savedUser = sessionStorage.getItem('auth0_user');
             if (savedUser) {
                 user = JSON.parse(savedUser);
             }
@@ -62,8 +62,8 @@ async function getCurrentUser() {
         return user;
     } catch (error) {
         console.error('Error getting user:', error);
-        // Last resort fallback
-        const savedUser = localStorage.getItem('auth0_user');
+        // Last resort fallback (session only)
+        const savedUser = sessionStorage.getItem('auth0_user');
         return savedUser ? JSON.parse(savedUser) : null;
     }
 }
@@ -134,15 +134,14 @@ async function handleAuthCallback() {
             // Get the authenticated user
             const user = await getCurrentUser();
             if (user && user.email) {
-                // Store session info
+                // Store session info (session-only, cleared when tab closes)
                 const basePath = window.location.pathname.replace(/[^/]+$/, '');
                 // Check if user is an admin
                 const adminStatus = await isAdmin();
 
-                // Explicitly set flags for clear navigation
+                // Store in sessionStorage only (not persistent)
                 sessionStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('isAuthenticated', 'true'); // Persistent
-                localStorage.setItem('auth0_user', JSON.stringify(user));
+                sessionStorage.setItem('auth0_user', JSON.stringify(user));
 
                 if (adminStatus) {
                     // Admin user - redirect to admin panel
@@ -174,12 +173,9 @@ async function logout() {
         if (!auth0Client) {
             await initAuth0();
         }
-        // Clear fallback auth state
+        // Clear session storage
         try {
             sessionStorage.clear();
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('auth0_user');
-            localStorage.removeItem('auth0_token');
         } catch (e) { }
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
         const returnTo = window.location.origin + basePath + 'index.html';
@@ -193,9 +189,6 @@ async function logout() {
     } catch (error) {
         console.error('Logout error:', error);
         sessionStorage.clear();
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('auth0_token');
-        localStorage.removeItem('auth0_user');
         const basePath = window.location.pathname.replace(/[^/]+$/, '');
         window.location.replace(basePath + 'index.html');
     }
