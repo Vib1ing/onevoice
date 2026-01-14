@@ -8,11 +8,12 @@ async function initAuth0() {
         auth0Client = await auth0.createAuth0Client({
             domain: AUTH0_CONFIG.domain,
             clientId: AUTH0_CONFIG.clientId,
-            cacheLocation: 'memory', // Session ends when tab closes
-            useRefreshTokens: false,  // Not needed for session-only
+            cacheLocation: 'localstorage', // Persist session in local storage
+            useRefreshTokens: true,  // Enable refresh tokens for longer sessions
             authorizationParams: {
                 redirect_uri: AUTH0_CONFIG.redirectUri,
-                audience: AUTH0_CONFIG.audience
+                audience: AUTH0_CONFIG.audience,
+                scope: AUTH0_CONFIG.scope
             }
         });
         return true;
