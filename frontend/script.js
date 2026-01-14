@@ -62,6 +62,16 @@ function toggleMobileMenu() {
     navMenu.classList.toggle('active');
 }
 
+// Dynamic Navbar Scrolling Effect
+window.addEventListener('scroll', function () {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
 // Authentication functions moved to auth0-auth.js
 // This file can now focus on UI behavior like carousels and smooth scrolling.
 

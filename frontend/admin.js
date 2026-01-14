@@ -124,7 +124,7 @@ function openModal(type, itemId = null) {
 
     if (type === 'blog') {
         title = itemId ? 'Edit Blog Post' : 'Add New Blog Post';
-        const item = itemId ? blogs.find(b => b.id === itemId) : null;
+        const item = itemId ? blogs.find(b => (b._id === itemId || b.id === itemId)) : null;
         formHTML = `
             <div class="form-group">
                 <label for="blogTitle">Title</label>
@@ -154,7 +154,7 @@ function openModal(type, itemId = null) {
                 </div>
                 <div class="form-group">
                     <label for="blogDate">Date</label>
-                    <input type="date" id="blogDate" name="blogDate" value="${item ? item.date : new Date().toISOString().split('T')[0]}" required>
+                    <input type="date" id="blogDate" name="blogDate" value="${item ? item.date.split('T')[0] : new Date().toISOString().split('T')[0]}" required>
                 </div>
             </div>
             <input type="hidden" id="itemId" value="${itemId || ''}">
@@ -192,7 +192,7 @@ function openModal(type, itemId = null) {
         `;
     } else if (type === 'event') {
         title = itemId ? 'Edit Event' : 'Add New Event';
-        const item = itemId ? events.find(e => e.id === itemId) : null;
+        const item = itemId ? events.find(e => (e._id === itemId || e.id === itemId)) : null;
         formHTML = `
             <div class="form-group">
                 <label for="eventTitle">Title</label>
