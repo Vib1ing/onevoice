@@ -163,7 +163,7 @@ function openModal(type, itemId = null) {
         `;
     } else if (type === 'member') {
         title = itemId ? 'Edit Member' : 'Add New Member';
-        const item = itemId ? members.find(m => m.id === itemId) : null;
+        const item = itemId ? members.find(m => (m._id === itemId || m.id === itemId)) : null;
         formHTML = `
             <div class="form-group">
                 <label for="memberName">Name</label>
