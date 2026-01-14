@@ -13,9 +13,10 @@ const app = express();
 
 // Allow CORS for the production frontend
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://onevoicengo.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: ['http://localhost:5173', 'http://localhost:5500', 'http://127.0.0.1:5500', 'https://onevoicengo.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true
 }));
 
 app.use(express.json());
