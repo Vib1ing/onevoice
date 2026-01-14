@@ -98,6 +98,57 @@ async function loadBlogs() {
   }
 }
 
+// Role hierarchy for sorting members
+const ROLE_HIERARCHY = {
+  // Tier 1 - Founders & Directors (highest)
+  'founder': 1,
+  'co-founder': 1,
+  'director': 1,
+  'executive director': 1,
+  'president': 1,
+  'ceo': 1,
+  // Tier 2 - Vice/Deputy Leadership
+  'vice president': 2,
+  'vice-president': 2,
+  'deputy director': 2,
+  // Tier 3 - Department Heads
+  'head': 3,
+  'lead': 3,
+  'manager': 3,
+  'coordinator': 3,
+  'secretary': 3,
+  'treasurer': 3,
+  // Tier 4 - Regular Members (lowest)
+  'member': 4,
+  'volunteer': 4
+};
+
+function getRoleTier(role) {
+  const roleLower = role.toLowerCase();
+  // Check for exact matches first
+  if (ROLE_HIERARCHY[roleLower] !== undefined) {
+    return ROLE_HIERARCHY[roleLower];
+  }
+  // Check for partial matches
+  for (const [key, tier] of Object.entries(ROLE_HIERARCHY)) {
+    if (roleLower.includes(key)) {
+      return tier;
+    }
+  }
+  // Default to tier 3 (middle) for unknown roles
+  return 3;
+}
+
+function getTierLabel(tier) {
+  switch (tier) {
+    case 1: return 'Founders & Directors';
+    case 2: return 'Leadership';
+    case 3: return 'Team Leads';
+    case 4: return 'Members';
+    default: return 'Team';
+  }
+}
+
 // Load members (API)
 async function loadMembers() {
   let members = await fetchFromApi('members');
@@ -105,20 +156,59 @@ async function loadMembers() {
 
   const membersGrid = document.querySelector('.members-grid');
   if (membersGrid) {
-    membersGrid.innerHTML = members.length === 0
-      ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No members yet. Check back soon!</p>'
-      : members.map(member => `
-          <div class="member-card">
-              <div class="member-image">
+    if (members.length === 0) {
+      membersGrid.innerHTML = '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No members yet. Check back soon!</p>';
+      return;
+    }
+
+    // Sort members by role hierarchy (tier 1 at top, tier 4 at bottom)
+    const sortedMembers = [...members].sort((a, b) => {
+      const tierA = getRoleTier(a.role);
+      const tierB = getRoleTier(b.role);
+      return tierA - tierB;
+    });
+
+    // Group members by tier
+    const groupedMembers = {};
+    sortedMembers.forEach(member => {
+      const tier = getRoleTier(member.role);
+      if (!groupedMembers[tier]) {
+        groupedMembers[tier] = [];
+      }
+      groupedMembers[tier].push(member);
+    });
+
+    // Build HTML with tier sections
+    let html = '';
+    const tiers = Object.keys(groupedMembers).sort((a, b) => a - b);
+
+    tiers.forEach((tier, index) => {
+      const tierMembers = groupedMembers[tier];
+      const tierLabel = getTierLabel(parseInt(tier));
+      const tierClass = `tier-${tier}`;
+
+      html += `
+        <div class="members-tier ${tierClass}" style="grid-column: 1 / -1;">
+          <h3 class="tier-label">${tierLabel}</h3>
+          <div class="tier-members">
+            ${tierMembers.map(member => `
+              <div class="member-card ${tierClass}-card">
+                <div class="member-image">
                   <img src="${member.image}" alt="${member.name}">
-              </div>
-              <div class="member-info">
+                </div>
+                <div class="member-info">
                   <h3>${member.name}</h3>
                   <p class="member-role">${member.role}</p>
                   <p class="member-bio">${member.bio}</p>
+                </div>
               </div>
+            `).join('')}
           </div>
-        `).join('');
+        </div>
+      `;
+    });
+
+    membersGrid.innerHTML = html;
   }
 }
 

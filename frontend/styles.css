@@ -368,6 +368,111 @@ body {
     font-size: 0.95rem;
 }
 
+/* Team Hierarchy Tiers */
+.members-tier {
+    margin-bottom: 3rem;
+}
+
+.tier-label {
+    color: #8B6F47;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #D4C5B9;
+    font-weight: 600;
+}
+
+.tier-members {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    justify-items: center;
+}
+
+/* Tier 1 - Founders & Directors (Featured styling) */
+.tier-1 .tier-label {
+    font-size: 1.8rem;
+    color: #6B5637;
+    border-bottom-color: #8B6F47;
+}
+
+.tier-1-card {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F1E8 100%);
+    border: 2px solid #8B6F47;
+    transform: scale(1.05);
+}
+
+.tier-1-card .member-image {
+    width: 180px;
+    height: 180px;
+    border: 4px solid #8B6F47;
+    box-shadow: 0 4px 15px rgba(139, 111, 71, 0.3);
+}
+
+.tier-1-card .member-info h3 {
+    font-size: 1.3rem;
+}
+
+.tier-1-card .member-role {
+    color: #6B5637;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* Tier 2 - Vice Leadership */
+.tier-2 .tier-label {
+    font-size: 1.6rem;
+}
+
+.tier-2-card {
+    border: 2px solid #D4C5B9;
+}
+
+.tier-2-card .member-image {
+    width: 160px;
+    height: 160px;
+    border: 3px solid #8B6F47;
+}
+
+/* Tier 3 - Team Leads */
+.tier-3 .tier-label {
+    font-size: 1.4rem;
+}
+
+.tier-3-card .member-image {
+    width: 140px;
+    height: 140px;
+}
+
+/* Tier 4 - Members */
+.tier-4 .tier-label {
+    font-size: 1.3rem;
+    color: #5C4A37;
+}
+
+.tier-4 .tier-members {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.tier-4-card {
+    padding: 1.2rem;
+}
+
+.tier-4-card .member-image {
+    width: 120px;
+    height: 120px;
+    border-width: 3px;
+}
+
+.tier-4-card .member-info h3 {
+    font-size: 1rem;
+}
+
+.tier-4-card .member-bio {
+    font-size: 0.85rem;
+}
+
 /* Blogs Section */
 .blogs-section {
     padding: 3rem 0;
