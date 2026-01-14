@@ -179,7 +179,7 @@ function openModal(type, itemId = null) {
                     <input type="file" id="memberImageFile" name="memberImageFile" accept=".jpg,.jpeg,.png,.heic" style="margin-bottom: 0.5rem;">
                     <small style="color: #5C4A37;">Or enter URL:</small>
                 </div>
-                <input type="url" id="memberImage" name="memberImage" value="${item ? item.image : ''}" placeholder="https://example.com/image.jpg" required>
+                <input type="url" id="memberImage" name="memberImage" value="${item ? item.image : ''}" placeholder="https://example.com/image.jpg">
                 <div id="memberImagePreview" style="margin-top: 0.5rem;"></div>
             </div>
             <div class="form-group">
