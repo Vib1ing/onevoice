@@ -41,7 +41,7 @@ async function loadBlogs() {
     blogsGrid.innerHTML = blogs.length === 0
       ? '<p style="text-align: center; color: #5C4A37; padding: 2rem;">No blog posts yet. Check back soon!</p>'
       : blogs.map(blog => {
-        const date = new Date(blog.date);
+        const date = new Date(blog.date || blog.published || Date.now());
         const preview = blog.content ? blog.content.substring(0, 200) + '...' : '';
         return `
               <article class="blog-card-large" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
@@ -72,7 +72,7 @@ async function loadBlogs() {
     blogPreviewGrid.innerHTML = recentBlogs.length === 0
       ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No blog posts yet. Check back soon!</p>'
       : recentBlogs.map(blog => {
-        const date = new Date(blog.date);
+        const date = new Date(blog.date || blog.published || Date.now());
         const preview = blog.content ? blog.content.substring(0, 100) + '...' : '';
         return `
               <article class="blog-card" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
@@ -329,7 +329,7 @@ async function loadBlogDetail() {
       return;
     }
 
-    const date = new Date(blog.date);
+    const date = new Date(blog.date || blog.published || Date.now());
     document.title = `OneVoice - ${blog.title}`;
 
     blogDetail.innerHTML = `
