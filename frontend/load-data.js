@@ -57,7 +57,6 @@ async function loadBlogs() {
                       </div>
                       <p>${preview}</p>
                       <div class="blog-stats">
-                          <span class="blog-likes">❤️ ${blog.likes || 0}</span>
                           <a href="blog-detail.html?id=${blog.id}" class="read-more">Read More →</a>
                       </div>
                   </div>
@@ -88,7 +87,6 @@ async function loadBlogs() {
                       </div>
                       <p>${preview}</p>
                       <div class="blog-stats">
-                          <span class="blog-likes">❤️ ${blog.likes || 0}</span>
                           <span class="blog-date">${date.toLocaleDateString()}</span>
                       </div>
                   </div>
@@ -349,13 +347,9 @@ async function loadBlogDetail() {
       <div class="blog-body">
         ${blog.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
       </div>
-      <div class="blog-actions">
-        <button class="like-btn" id="likeBtn" onclick="toggleLike('${blog._id || blog.id}')">
-          <span id="likeIcon">❤️</span>
-          <span id="likeCount">${blog.likes || 0}</span>
-        </button>
-        <a href="blogs.html" class="back-link">← Back to Blogs</a>
-      </div>
+        <div class="blog-actions">
+          <a href="blogs.html" class="back-link">← Back to Blogs</a>
+        </div>
     `;
   } catch (error) {
     console.error('Error loading blog:', error);
