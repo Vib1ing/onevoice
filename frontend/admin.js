@@ -154,7 +154,7 @@ function openModal(type, itemId = null) {
                 </div>
                 <div class="form-group">
                     <label for="blogDate">Date</label>
-                    <input type="date" id="blogDate" name="blogDate" value="${item ? item.date.split('T')[0] : new Date().toISOString().split('T')[0]}" required>
+                    <input type="date" id="blogDate" name="blogDate" value="${(item && item.date) ? item.date.split('T')[0] : new Date().toISOString().split('T')[0]}" required>
                 </div>
             </div>
             <input type="hidden" id="itemId" value="${itemId || ''}">
