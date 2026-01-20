@@ -105,9 +105,14 @@ let quill = null;
 
 // Initialize Quill editor
 function initQuill() {
-    if (quill) return; // Already initialized
     const container = document.getElementById('editor-container');
     if (!container) return;
+
+    // Clear any existing toolbar/container content to prevent double initialization
+    const modalContent = container.parentElement;
+    if (quill) {
+        quill = null;
+    }
 
     quill = new Quill('#editor-container', {
         theme: 'snow',
@@ -274,10 +279,13 @@ function openModal(type, itemId = null) {
     // Initialize/Setup contents for blog rich text
     if (type === 'blog') {
         const item = itemId ? blogs.find(b => (b._id === itemId || b.id === itemId)) : null;
-        initQuill();
-        if (quill) {
-            quill.root.innerHTML = item ? item.content : '';
-        }
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            initQuill();
+            if (quill) {
+                quill.root.innerHTML = item ? item.content : '';
+            }
+        }, 10);
     }
 
     // Show/hide stats field based on event type
@@ -299,6 +307,9 @@ function openModal(type, itemId = null) {
 function closeModal() {
     document.getElementById('itemModal').classList.remove('active');
     document.getElementById('itemForm').reset();
+    if (quill) {
+        quill = null;
+    }
 }
 
 // Save item function
