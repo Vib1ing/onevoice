@@ -35,6 +35,13 @@ async function loadBlogs() {
   let blogs = await fetchFromApi('blogs');
   if (!blogs) blogs = await loadDataFromSource('blogs', 'blogs');
 
+  // Sort blogs by date (newest first)
+  blogs.sort((a, b) => {
+    const dateA = new Date(a.date || a.published || 0);
+    const dateB = new Date(b.date || b.published || 0);
+    return dateB - dateA;
+  });
+
   // Load blogs wherever the blogs grid exists
   const blogsList = document.getElementById('blogs-list');
   const researchList = document.getElementById('research-list');
