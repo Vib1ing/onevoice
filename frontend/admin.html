@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OneVoice - Admin Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Quill Rich Text Editor CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
         .admin-container {
             padding: 3rem 0;
@@ -237,6 +239,26 @@
         .save-btn:hover {
             background-color: #6B5637;
         }
+
+        /* Quill Editor overrides */
+        #editor-container {
+            height: 300px;
+            background-color: #FFFFFF;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            border: 1px solid #D4C5B9 !important;
+        }
+
+        .ql-toolbar.ql-snow {
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            border: 1px solid #D4C5B9 !important;
+            background-color: #F5F1E8;
+        }
+
+        .ql-container.ql-snow {
+            border: 1px solid #D4C5B9 !important;
+        }
     </style>
 </head>
 
@@ -362,6 +384,7 @@
     <script src="auth-config.js"></script>
     <script src="auth0-auth.js"></script>
     <script src="script.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="admin.js"></script>
     <script src="update-navbar.js"></script>
     <script>

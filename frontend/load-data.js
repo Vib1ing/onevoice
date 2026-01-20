@@ -71,7 +71,7 @@ async function loadBlogs() {
                       </div>
                       <p>${preview}</p>
                       <div class="blog-stats">
-                          <a href="blog-detail.html?id=${blog.id}" class="read-more">Read More →</a>
+                          <a href="blog-detail.html?id=${blog.id}" class="read-more">Read More</a>
                       </div>
                   </div>
               </article>
@@ -116,7 +116,7 @@ async function loadBlogs() {
   // Load blog previews on index.html
   const blogPreviewGrid = document.querySelector('.blog-grid');
   if (blogPreviewGrid) {
-    const recentBlogs = (blogs || []).slice(0, 3).reverse(); // Show 3 most recent
+    const recentBlogs = (blogs || []).slice(0, 4).reverse(); // Show 4 most recent
     blogPreviewGrid.innerHTML = recentBlogs.length === 0
       ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No blog posts yet. Check back soon!</p>'
       : recentBlogs.map(blog => {

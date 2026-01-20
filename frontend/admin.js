@@ -101,6 +101,27 @@ function setupImageHandlers(type) {
 let blogs = [];
 let members = [];
 let events = [];
+let quill = null;
+
+// Initialize Quill editor
+function initQuill() {
+    if (quill) return; // Already initialized
+    const container = document.getElementById('editor-container');
+    if (!container) return;
+
+    quill = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'indent': '-1' }, { 'indent': '+1' }],
+                ['link', 'clean']
+            ]
+        }
+    });
+}
 
 // Tab switching
 function switchTab(tab) {
@@ -145,7 +166,8 @@ function openModal(type, itemId = null) {
             </div>
             <div class="form-group">
                 <label for="blogContent">Content</label>
-                <textarea id="blogContent" name="blogContent" rows="10" required style="width: 100%; padding: 0.8rem; border: 2px solid #D4C5B9; border-radius: 5px; font-size: 1rem; color: #5C4A37; background-color: #F5F1E8; font-family: inherit;">${item ? item.content : ''}</textarea>
+                <div id="editor-container"></div>
+                <input type="hidden" id="blogContent" name="blogContent">
             </div>
             <div class="form-row-2">
                 <div class="form-group">
@@ -249,6 +271,15 @@ function openModal(type, itemId = null) {
     // Setup image handlers for preview and upload
     setupImageHandlers(type === 'blog' ? 'blog' : type === 'member' ? 'member' : 'event');
 
+    // Initialize/Setup contents for blog rich text
+    if (type === 'blog') {
+        const item = itemId ? blogs.find(b => (b._id === itemId || b.id === itemId)) : null;
+        initQuill();
+        if (quill) {
+            quill.root.innerHTML = item ? item.content : '';
+        }
+    }
+
     // Show/hide stats field based on event type
     if (type === 'event') {
         const eventTypeSelect = document.getElementById('eventType');
@@ -300,11 +331,12 @@ async function saveItem(type, itemId) {
         }
 
         if (type === 'blog') {
+            const blogContent = quill ? quill.root.innerHTML : document.getElementById('blogContent').value;
             body = {
                 title: document.getElementById('blogTitle').value,
                 author: document.getElementById('blogAuthor').value,
                 image: imageUrl || 'https://via.placeholder.com/600x350/D4C5B9/8B6F47?text=Blog+Image',
-                content: document.getElementById('blogContent').value,
+                content: blogContent,
                 readTime: parseInt(document.getElementById('blogReadTime').value),
                 date: document.getElementById('blogDate').value
             };
