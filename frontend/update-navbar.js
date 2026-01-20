@@ -50,25 +50,25 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 // Create user info/logout section
                 const userSection = document.createElement('li');
-                userSection.style.cssText = 'display: flex; align-items: center; gap: 1rem;';
+                userSection.style.cssText = 'display: flex; align-items: center; gap: 0.4rem; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 1rem; margin-left: 0.5rem;';
 
                 if (userPicture) {
                     const img = document.createElement('img');
                     img.src = userPicture;
-                    img.style.cssText = 'width: 30px; height: 30px; border-radius: 50%;';
+                    img.style.cssText = 'width: 24px; height: 24px; border-radius: 50%;';
                     userSection.appendChild(img);
                 }
 
                 const userText = document.createElement('span');
                 userText.textContent = username;
-                userText.style.cssText = 'color: #F5F1E8; font-size: 0.9rem;';
+                userText.style.cssText = 'color: #F5F1E8; font-size: 0.85rem; font-weight: 600; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis;';
                 userSection.appendChild(userText);
 
                 const logoutBtn = document.createElement('a');
                 logoutBtn.href = '#';
                 logoutBtn.textContent = 'Logout';
                 logoutBtn.className = 'logout-btn';
-                logoutBtn.style.cssText = 'color: #F5F1E8; text-decoration: none; cursor: pointer;';
+                logoutBtn.style.cssText = 'color: #F5F1E8; text-decoration: none; cursor: pointer; font-size: 0.8rem; margin-left: 0.4rem; opacity: 0.8; font-weight: 700;';
                 logoutBtn.onclick = async function (e) {
                     e.preventDefault();
                     try {
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const li = document.createElement('li');
                 adminLink = document.createElement('a');
                 adminLink.href = 'admin.html';
-                adminLink.textContent = 'Admin Dashboard'; // Made more descriptive
+                adminLink.textContent = 'Admin'; // Made more descriptive
                 adminLink.className = window.location.pathname.includes('admin.html') ? 'active' : '';
                 li.appendChild(adminLink);
 
