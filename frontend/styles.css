@@ -109,7 +109,7 @@ h6 {
 .nav-menu {
     display: flex;
     list-style: none;
-    gap: 4.5rem;
+    gap: 3rem;
     align-items: center;
 }
 
@@ -118,19 +118,19 @@ h6 {
     text-decoration: none;
     font-weight: 700;
     transition: color 0.3s;
-    padding: 0.8rem 1rem;
+    padding: 0.6rem 0.8rem;
     position: relative;
     display: inline-block;
     opacity: 0.95;
-    font-size: 1.15rem;
+    font-size: 1rem;
 }
 
 .nav-menu a::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 1rem;
-    right: 1rem;
+    left: 0.8rem;
+    right: 0.8rem;
     width: auto;
     height: 3px;
     background-color: var(--color-accent);
@@ -590,6 +590,14 @@ h6 {
     color: var(--color-text-main);
     margin-bottom: 4rem;
     font-size: 1.25rem;
+}
+
+.blogs-category h2 {
+    color: var(--color-primary);
+    margin-bottom: 2.5rem;
+    font-size: 2rem;
+    border-left: 5px solid var(--color-secondary);
+    padding-left: 1.5rem;
 }
 
 .blogs-grid-vertical {

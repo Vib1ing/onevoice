@@ -36,14 +36,28 @@ async function loadBlogs() {
   if (!blogs) blogs = await loadDataFromSource('blogs', 'blogs');
 
   // Load blogs wherever the blogs grid exists
-  const blogsGrid = document.querySelector('.blogs-grid');
-  if (blogsGrid) {
-    blogsGrid.innerHTML = blogs.length === 0
-      ? '<p style="text-align: center; color: #5C4A37; padding: 2rem;">No blog posts yet. Check back soon!</p>'
-      : blogs.map(blog => {
-        const date = new Date(blog.date || blog.published || Date.now());
-        const preview = blog.content ? blog.content.substring(0, 200) + '...' : '';
-        return `
+  const blogsList = document.getElementById('blogs-list');
+  const researchList = document.getElementById('research-list');
+
+  // If specific lists exist (blogs.html), separate data
+  if (blogsList || researchList) {
+    const blogItems = [];
+    const researchItems = [];
+
+    blogs.forEach(item => {
+      const isResearch = (item.category && item.category.toLowerCase() === 'research') ||
+        (item.title && item.title.toLowerCase().includes('research'));
+      if (isResearch) {
+        researchItems.push(item);
+      } else {
+        blogItems.push(item);
+      }
+    });
+
+    const createCard = (blog) => {
+      const date = new Date(blog.date || blog.published || Date.now());
+      const preview = blog.content ? blog.content.substring(0, 200) + '...' : '';
+      return `
               <article class="blog-card-large" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
                   <div class="blog-image">
                       <img src="${blog.image}" alt="${blog.title}">
@@ -62,7 +76,41 @@ async function loadBlogs() {
                   </div>
               </article>
           `;
+    };
+
+    if (blogsList) {
+      blogsList.innerHTML = blogItems.length === 0
+        ? '<p style="text-align: center; color: #5C4A37; padding: 2rem;">No blog posts yet.</p>'
+        : blogItems.map(createCard).join('');
+    }
+
+    if (researchList) {
+      researchList.innerHTML = researchItems.length === 0
+        ? '<p style="text-align: center; color: #5C4A37; padding: 2rem;">No research articles published yet.</p>'
+        : researchItems.map(createCard).join('');
+    }
+  } else {
+    // Fallback for pages where only .blogs-grid exists without ID (not index.html, handled below)
+    // This part is likely not hit on index.html as it selects differently, but good for safety
+    const genericGrid = document.querySelector('.blogs-grid');
+    // Only run if index.html specific code hasn't run or this is a different page
+    if (genericGrid && !document.querySelector('.blog-preview-section')) {
+      genericGrid.innerHTML = blogs.map(blog => {
+        // ... (generic card creation same as above)
+        const date = new Date(blog.date || blog.published || Date.now());
+        const preview = blog.content ? blog.content.substring(0, 200) + '...' : '';
+        return `
+                  <article class="blog-card-large" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
+                      <!-- ... content ... -->
+                      <div class="blog-image"><img src="${blog.image}" alt="${blog.title}"></div>
+                      <div class="blog-content">
+                          <h2>${blog.title}</h2>
+                          <p>${preview}</p>
+                      </div>
+                  </article>
+              `;
       }).join('');
+    }
   }
 
   // Load blog previews on index.html
