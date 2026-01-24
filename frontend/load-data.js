@@ -277,9 +277,12 @@ async function loadMembers() {
 }
 
 // Load events (API)
+let allEventsCache = []; // Global cache for current page events
+
 async function loadEvents() {
   let events = await fetchFromApi('events');
   if (!events) events = await loadDataFromSource('events', 'events');
+  allEventsCache = events;
 
   const upcomingSection = document.querySelector('#upcoming-events');
   const pastSection = document.querySelector('#past-events');
@@ -294,12 +297,12 @@ async function loadEvents() {
       if (upcomingGrid) {
         upcomingGrid.innerHTML = upcomingEvents.length === 0
           ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No upcoming events. Check back soon!</p>'
-          : upcomingEvents.map(event => {
+          : upcomingEvents.map((event, index) => {
             const date = parseLocalDate(event.date);
             return `
                   <div class="event-card">
                       <div class="event-image">
-                          <img src="${event.image}" alt="${event.title}">
+                          <img src="${event.image || 'https://via.placeholder.com/400x200/D4C5B9/8B6F47?text=Event'}" alt="${event.title}" onerror="this.src='https://via.placeholder.com/400x200/D4C5B9/8B6F47?text=Event'">
                           <span class="event-badge upcoming">Upcoming</span>
                       </div>
                       <div class="event-content">
@@ -307,10 +310,12 @@ async function loadEvents() {
                           <div class="event-details">
                               <p class="event-date">📅 ${date.toLocaleDateString()}</p>
                               <p class="event-time">🕐 ${event.time || 'TBD'}</p>
-                              <p class="event-location">📍 ${event.location}</p>
+                              <p class="event-location">📍 ${event.location || 'TBD'}</p>
                           </div>
-                          <p class="event-description">${event.description}</p>
-                          <button class="btn-event">Learn More</button>
+                          <p class="event-description">${event.description || ''}</p>
+                          <button class="btn-event" onclick="showEventDetailsByIndex('${encodeURIComponent(event.id || event._id)}')">
+                              Learn More
+                          </button>
                       </div>
                   </div>
               `;
@@ -337,18 +342,21 @@ async function loadEvents() {
             return `
                   <div class="event-card past">
                       <div class="event-image">
-                          <img src="${event.image}" alt="${event.title}">
+                          <img src="${event.image || 'https://via.placeholder.com/400x200/D4C5B9/8B6F47?text=Event'}" alt="${event.title}" onerror="this.src='https://via.placeholder.com/400x200/D4C5B9/8B6F47?text=Event'">
                           <span class="event-badge past">Past Event</span>
                       </div>
                       <div class="event-content">
                           <h3>${event.title}</h3>
                           <div class="event-details">
                               <p class="event-date">📅 ${date.toLocaleDateString()}</p>
-                              <p class="event-time">🕐 ${event.time || 'TBD'}</p>
-                              <p class="event-location">📍 ${event.location}</p>
+                              <p class="event-time">🕐 ${event.time || 'N/A'}</p>
+                              <p class="event-location">📍 ${event.location || 'N/A'}</p>
                           </div>
-                          <p class="event-description">${event.description}</p>
+                          <p class="event-description">${event.description || ''}</p>
                           ${statsHTML ? `<div class="event-stats">${statsHTML}</div>` : ''}
+                          <button class="btn-event" onclick="showEventDetailsByIndex('${encodeURIComponent(event.id || event._id)}')">
+                              View Summary
+                          </button>
                       </div>
                   </div>
               `;
@@ -356,6 +364,59 @@ async function loadEvents() {
       }
     }
   }
+}
+
+// Show event details in a modal
+function showEventDetailsByIndex(eventId) {
+  const event = allEventsCache.find(e => (e.id === decodeURIComponent(eventId) || e._id === decodeURIComponent(eventId)));
+  if (!event) return;
+
+  const date = parseLocalDate(event.date);
+
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'event-modal-overlay';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1.5rem;
+    animation: fadeIn 0.3s ease;
+  `;
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+  modal.innerHTML = `
+    <div style="background: #FFFFFF; padding: 2.5rem; border-radius: 24px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; border: 1px solid rgba(225, 137, 99, 0.1);">
+      <button onclick="this.closest('.event-modal-overlay').remove()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #4b5563;">&times;</button>
+      
+      <div style="margin-bottom: 2rem;">
+        <img src="${event.image || 'https://via.placeholder.com/600x300'}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+        <h2 style="color: #E18963; margin-bottom: 1rem; font-size: 2.2rem; font-family: 'Libre Baskerville', serif;">${event.title}</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; padding: 1rem; background: #F8FAF0; border-radius: 12px;">
+          <p style="margin: 0; color: #5d4d42; font-size: 0.95rem;"><strong>📅 Date:</strong> ${date.toLocaleDateString()}</p>
+          <p style="margin: 0; color: #5d4d42; font-size: 0.95rem;"><strong>🕐 Time:</strong> ${event.time || 'TBD'}</p>
+          <p style="margin: 0; color: #5d4d42; font-size: 0.95rem;"><strong>📍 Location:</strong> ${event.location || 'TBD'}</p>
+        </div>
+      </div>
+      
+      <div style="color: #4b5563; line-height: 1.8; margin-bottom: 2rem; font-size: 1.05rem;">
+        <h3 style="color: #E18963; margin-bottom: 1rem; font-size: 1.25rem;">Description</h3>
+        <div style="white-space: pre-wrap;">${event.description || 'No description available.'}</div>
+      </div>
+      
+      <button onclick="this.closest('.event-modal-overlay').remove()" style="width: 100%; padding: 1.2rem; background: #D9C4B0; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; color: #5d4d42; font-size: 1rem; transition: background 0.3s;">Close View</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
 }
 
 // Load individual blog post for blog-detail.html
