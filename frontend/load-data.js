@@ -1,4 +1,15 @@
 
+// Helper function to parse date strings correctly (avoids timezone issues)
+// When parsing dates like '2026-02-14', JavaScript interprets them as UTC midnight,
+// which displays as the previous day in local time. This function parses as local time.
+function parseLocalDate(dateString) {
+  if (!dateString) return new Date();
+  // Handle ISO format (e.g., '2026-02-14T00:00:00.000Z')
+  const dateOnly = dateString.split('T')[0];
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  // Create date in local timezone (month is 0-indexed)
+  return new Date(year, month - 1, day);
+}
 
 async function fetchFromApi(endpoint) {
   try {
@@ -62,7 +73,7 @@ async function loadBlogs() {
     });
 
     const createCard = (blog) => {
-      const date = new Date(blog.date || blog.published || Date.now());
+      const date = parseLocalDate(blog.date || blog.published);
       const preview = blog.content ? blog.content.substring(0, 200) + '...' : '';
       return `
               <article class="blog-card-large" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
@@ -104,7 +115,7 @@ async function loadBlogs() {
     if (genericGrid && !document.querySelector('.blog-preview-section')) {
       genericGrid.innerHTML = blogs.map(blog => {
         // ... (generic card creation same as above)
-        const date = new Date(blog.date || blog.published || Date.now());
+        const date = parseLocalDate(blog.date || blog.published);
         const preview = blog.content ? blog.content.substring(0, 200) + '...' : '';
         return `
                   <article class="blog-card-large" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
@@ -127,7 +138,7 @@ async function loadBlogs() {
     blogPreviewGrid.innerHTML = recentBlogs.length === 0
       ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No posts yet. Check back soon!</p>'
       : recentBlogs.map(blog => {
-        const date = new Date(blog.date || blog.published || Date.now());
+        const date = parseLocalDate(blog.date || blog.published);
         const preview = blog.content ? blog.content.substring(0, 100) + '...' : '';
         return `
               <article class="blog-card" onclick="window.location.href='blog-detail.html?id=${blog.id}'">
@@ -274,8 +285,8 @@ async function loadEvents() {
   const pastSection = document.querySelector('#past-events');
 
   if (document.querySelector('.events-category')) {
-    const upcomingEvents = events.filter(e => e.type === 'upcoming').sort((a, b) => new Date(a.date) - new Date(b.date));
-    const pastEvents = events.filter(e => e.type === 'past').sort((a, b) => new Date(b.date) - new Date(a.date));
+    const upcomingEvents = events.filter(e => e.type === 'upcoming').sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+    const pastEvents = events.filter(e => e.type === 'past').sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
 
     const eventsCategories = document.querySelectorAll('.events-category');
     if (eventsCategories.length >= 2) {
@@ -284,7 +295,7 @@ async function loadEvents() {
         upcomingGrid.innerHTML = upcomingEvents.length === 0
           ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No upcoming events. Check back soon!</p>'
           : upcomingEvents.map(event => {
-            const date = new Date(event.date);
+            const date = parseLocalDate(event.date);
             return `
                   <div class="event-card">
                       <div class="event-image">
@@ -295,7 +306,7 @@ async function loadEvents() {
                           <h3>${event.title}</h3>
                           <div class="event-details">
                               <p class="event-date">📅 ${date.toLocaleDateString()}</p>
-                              <p class="event-time">🕐 ${event.time}</p>
+                              <p class="event-time">🕐 ${event.time || 'TBD'}</p>
                               <p class="event-location">📍 ${event.location}</p>
                           </div>
                           <p class="event-description">${event.description}</p>
@@ -311,7 +322,7 @@ async function loadEvents() {
         pastGrid.innerHTML = pastEvents.length === 0
           ? '<p style="text-align: center; color: #5C4A37; padding: 2rem; grid-column: 1 / -1;">No past events yet.</p>'
           : pastEvents.map(event => {
-            const date = new Date(event.date);
+            const date = parseLocalDate(event.date);
             let statsHTML = '';
             if (event.stats && event.stats.trim()) {
               const lines = event.stats.split('\n').filter(l => l.trim());
@@ -333,7 +344,7 @@ async function loadEvents() {
                           <h3>${event.title}</h3>
                           <div class="event-details">
                               <p class="event-date">📅 ${date.toLocaleDateString()}</p>
-                              <p class="event-time">🕐 ${event.time}</p>
+                              <p class="event-time">🕐 ${event.time || 'TBD'}</p>
                               <p class="event-location">📍 ${event.location}</p>
                           </div>
                           <p class="event-description">${event.description}</p>
@@ -384,7 +395,7 @@ async function loadBlogDetail() {
       return;
     }
 
-    const date = new Date(blog.date || blog.published || Date.now());
+    const date = parseLocalDate(blog.date || blog.published);
     document.title = `OneVoice - ${blog.title}`;
 
     blogDetail.innerHTML = `

@@ -1,3 +1,11 @@
+// Helper function to parse date strings correctly (avoids timezone issues)
+function parseLocalDate(dateString) {
+    if (!dateString) return new Date();
+    const dateOnly = dateString.split('T')[0];
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
 // Helper for API calls with Auth0 token
 async function fetchWithAuth(url, options = {}) {
     try {
@@ -241,7 +249,7 @@ function openModal(type, itemId = null) {
             <div class="form-row-2">
                 <div class="form-group">
                     <label for="eventDate">Date</label>
-                    <input type="date" id="eventDate" name="eventDate" value="${item ? item.date : ''}" required>
+                    <input type="date" id="eventDate" name="eventDate" value="${item && item.date ? item.date.split('T')[0] : ''}" required>
                 </div>
                 <div class="form-group">
                     <label for="eventTime">Time</label>
@@ -481,7 +489,7 @@ async function loadItems() {
                 <div class="item-card">
                     <div class="item-info">
                         <h3>${blog.title}</h3>
-                        <p>By ${blog.author} • ${blog.readTime} min read • ${new Date(blog.date).toLocaleDateString()}</p>
+                        <p>By ${blog.author} • ${blog.readTime} min read • ${parseLocalDate(blog.date).toLocaleDateString()}</p>
                     </div>
                     <div class="item-actions">
                         <button class="btn-edit" onclick="openModal('blog', '${blog._id || blog.id}')">Edit</button>
@@ -519,7 +527,7 @@ async function loadItems() {
                 <div class="item-card">
                     <div class="item-info">
                         <h3>${event.title}</h3>
-                        <p>${new Date(event.date).toLocaleDateString()} • ${event.time} • ${event.type === 'upcoming' ? 'Upcoming' : 'Past'}</p>
+                        <p>${parseLocalDate(event.date).toLocaleDateString()} • ${event.time || 'No time set'} • ${event.type === 'upcoming' ? 'Upcoming' : 'Past'}</p>
                     </div>
                     <div class="item-actions">
                         <button class="btn-edit" onclick="openModal('event', '${event._id || event.id}')">Edit</button>
