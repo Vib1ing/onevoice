@@ -398,7 +398,7 @@ function showEventDetailsByIndex(eventId) {
       <button onclick="this.closest('.event-modal-overlay').remove()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #4b5563;">&times;</button>
       
       <div style="margin-bottom: 2rem;">
-        <img src="${event.image || 'https://via.placeholder.com/600x300'}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+        <img src="${event.image || 'https://via.placeholder.com/600x300'}" style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); background: #f9fafb;">
         <h2 style="color: #E18963; margin-bottom: 1rem; font-size: 2.2rem; font-family: 'Libre Baskerville', serif;">${event.title}</h2>
         <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem; padding: 1rem; background: #F8FAF0; border-radius: 12px;">
           <p style="margin: 0; color: #5d4d42; font-size: 0.95rem;"><strong>📅 Date:</strong> ${date.toLocaleDateString()}</p>
